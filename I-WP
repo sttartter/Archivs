@@ -117,18 +117,14 @@ local setProfil = addIcon("onetwo",  {item = 31514, text = "PROFIL"}, function()
                 -- Your action here
                 continueHandling = false -- Stop handling messages
 
-                if vocationName == "paladin" then
-                    AttackBot.setActiveProfile(1)
-                    HealBot.setActiveProfile(1)
-                elseif vocationName == "knight" then
-                    AttackBot.setActiveProfile(2)
-                    HealBot.setActiveProfile(2)
+                if vocationName == "druid" then
+                    modules.client_options.setOption('profile', 1)
+                elseif vocationName == "paladin" then
+                    modules.client_options.setOption('profile', 2)
                 elseif vocationName == "sorcerer" then
-                    AttackBot.setActiveProfile(3)
-                    HealBot.setActiveProfile(3)
-                elseif vocationName == "druid" then
-                    AttackBot.setActiveProfile(4)
-                    HealBot.setActiveProfile(4)
+                    modules.client_options.setOption('profile', 3)
+                elseif vocationName == "knight" then
+                    modules.client_options.setOption('profile', 4)
                 end
                 break -- Exit loop since we found a match
             end
