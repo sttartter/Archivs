@@ -100,7 +100,7 @@ local ocultarTechosIcon = addIcon("ocultarTechos", {item = 1159, text = "Ocultar
 local setProfil = addIcon("onetwo",  {item = 31514, text = "PROFIL"}, function()
     g_game.look(player)
 
-    local vocationNames = {"knight", "sorcerer", "paladin", "druid"} -- Array of vocation names
+    local vocationNames = {"druid", "paladin", "sorcerer", "knight"} -- Array of vocation names
     local continueHandling = true
 
     onTextMessage(function(mode, text) 
