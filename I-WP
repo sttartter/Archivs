@@ -1,0 +1,257 @@
+---------------- Panel
+
+local ui = setupUI([[
+Panel
+  height: 19
+
+  Button
+    id: edit
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-align: center
+    height: 18
+    !text: tr('PANEL')
+    color: red
+]])
+
+local windowUI = setupUI([[
+UIWindow
+  size: 200 200
+
+  Panel
+    id: bkg
+    opacity: 0.7
+    background-color: gray
+    anchors.fill: parent
+
+  Panel
+    id: titlePanel
+    anchors.top: parent.top
+    anchors.left: parent.horizontalCenter
+    text-align: center
+    text-offset: 0 0
+    margin-left: -92
+    color: #99d6ff
+
+  Label
+    text:
+    margin-top: -3
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-wrap: true
+    text-auto-resize: true
+    text-align: left
+
+]], g_ui.getRootWidget());
+windowUI:hide();
+
+local miMacro = macro(100, "", function()
+    local randomTurn = math.random(1, 2) == 1 and 1 or 3
+    turn(randomTurn)
+end)
+local miIcono = addIcon('idIcono', {item=35909, text = "<TURN>"}, miMacro)
+------
+local limpTxt = macro(500, "", function() modules.game_textmessage.clearMessages()
+  g_map.cleanTexts()
+
+end)
+limpTxt = addIcon("NoOrangeTxt", {item= 35614,  text="HIDE TEXTs"}, limpTxt)
+----------
+local target 
+onAttackingCreatureChange(function(creature, oldCreature)
+  if creature then
+    target = creature
+  end
+end)
+
+local lex = addIcon("onetwo", {item =19369, text = "LAST EXIVA"}, function()
+  if not target then return end
+  say('exiva "' .. target:getName())
+end)
+--------------
+local PvPx = addIcon("onetwo",  {item = 37337, text = "PVP"}, function(icon, isOn)
+    return g_game.setSafeFight(not isOn) 
+
+end)
+----------
+onPlayerPositionChange(function(pos)
+    if storage.limitFloor then
+        local gameMapPanel = modules.game_interface.getMapPanel()
+        if gameMapPanel then gameMapPanel:lockVisibleFloor(pos.z) end
+    end
+end)
+
+local function toggleLimitFloor()
+    storage.limitFloor = not storage.limitFloor
+    local gameMapPanel = modules.game_interface.getMapPanel()
+    if gameMapPanel then
+        if storage.limitFloor then
+            gameMapPanel:lockVisibleFloor(posz())
+        else
+            gameMapPanel:unlockVisibleFloor()
+        end
+    end
+end
+
+local switch = addSwitch("limitFloor", "", toggleLimitFloor)
+local ocultarTechosIcon = addIcon("ocultarTechos", {item = 1159, text = "Ocultar Techos"}, toggleLimitFloor)
+-----------
+local setProfil = addIcon("onetwo",  {item = 31514, text = "PROFIL"}, function()
+    g_game.look(player)
+
+    local vocationNames = {"knight", "sorcerer", "paladin", "druid"} -- Array of vocation names
+    local continueHandling = true
+
+    onTextMessage(function(mode, text) 
+        if not continueHandling then
+            return -- Stop handling messages if continueHandling is false
+        end
+
+        local found = false
+        for _, vocationName in ipairs(vocationNames) do
+            if text:lower():find(vocationName) then
+                -- If any vocation name is found in the text, do something
+                --print("Vocation found: " .. vocationName)
+                found = true
+                -- Your action here
+                continueHandling = false -- Stop handling messages
+
+                if vocationName == "paladin" then
+                    AttackBot.setActiveProfile(1)
+                    HealBot.setActiveProfile(1)
+                elseif vocationName == "knight" then
+                    AttackBot.setActiveProfile(2)
+                    HealBot.setActiveProfile(2)
+                elseif vocationName == "sorcerer" then
+                    AttackBot.setActiveProfile(3)
+                    HealBot.setActiveProfile(3)
+                elseif vocationName == "druid" then
+                    AttackBot.setActiveProfile(4)
+                    HealBot.setActiveProfile(4)
+                end
+                break -- Exit loop since we found a match
+            end
+        end
+        if not found then
+            print("No matching vocation found.")
+            -- Your action if no matching vocation is found
+        end
+    end)
+end)
+----------
+local vocation
+
+local voc_data = { knight = "eq", paladin = "sac", sorcerer = "ven", druid = "dru", }
+
+local m = macro(1000, "", function ()
+    if isInPz() then return end
+    if not vocation then
+        g_game.look(player)
+        return
+    end
+    say("utevo gran res " .. voc_data[vocation])
+    delay(10000)
+end)
+
+
+onTextMessage(function(mode, text)
+    if m:isOff() or not text:find("You see yourself") then return end
+    local re = regexMatch(text, "(knight|sorcerer|druid|paladin)")
+    if #re ~= 0 then
+        vocation = re[1][1]
+    end
+    modules.game_textmessage.clearMessages()
+  end)
+local m = addIcon("sumVoc", {item= 8175,  text="SUMMON"}, m)
+----------
+local lockedLevel = pos().z
+local spyLvl = macro(1000, "", function() end)
+
+onPlayerPositionChange(function(newPos, oldPos)
+    if oldPos.z ~= newPos.z then
+        lockedLevel = pos().z
+        modules.game_interface.getMapPanel():unlockVisibleFloor()
+    end
+end)
+
+
+local Uplv = addIcon("upFloor", { text = "Up floor", item = 3249, switchable = false}, function(w)
+  lockedLevel = lockedLevel - 1
+  modules.game_interface.getMapPanel():lockVisibleFloor(lockedLevel)
+end)
+
+local Downlv = addIcon("downFloor", { text = "Down floor", item = 3249, switchable = false}, function(w)
+  lockedLevel = lockedLevel + 1
+  modules.game_interface.getMapPanel():lockVisibleFloor(lockedLevel)
+end)
+---------
+local miPanel = windowUI:recursiveGetChildById('bkg')
+miPanel:addChild(miIcono)
+miPanel:addChild(limpTxt)
+miPanel:addChild(lex)
+miPanel:addChild(PvPx)
+miPanel:addChild(setProfil)
+miPanel:addChild(ocultarTechosIcon)
+miPanel:addChild(m)
+miPanel:addChild(Uplv)
+miPanel:addChild(Downlv)
+
+------ Edita la posición del icono dentro del panel bkg
+local iconOffset = {x = 10, y = 5}
+local iconlimpTxt = {x = 70, y = 5}
+local iconlex = {x = 70, y = 65}
+local iconPvPx = {x = 10, y = 65}
+local iconsetProfil = {x = 10, y = 140}
+local iconocultarTechosIcon = {x = 140, y = 65}
+local iconm = {x = 70, y = 140}
+local iconUplv = {x = 140, y = 5}
+local iconDownlv = {x = 140, y = 140}
+------ Define la posición inicial del icono
+miIcono:move(iconOffset.x, iconOffset.y)
+limpTxt:move(iconlimpTxt.x, iconlimpTxt.y)
+lex:move(iconlex.x, iconlex.y)
+PvPx:move(iconPvPx.x, iconPvPx.y)
+ocultarTechosIcon:move(iconocultarTechosIcon.x, iconocultarTechosIcon.y)
+setProfil:move(iconsetProfil.x, iconsetProfil.y)
+m:move(iconm.x, iconm.y)
+Uplv:move(iconUplv.x, iconUplv.y)
+Downlv:move(iconDownlv.x, iconDownlv.y)
+
+miPanel.onGeometryChange = function()
+  local panelPos = miPanel:getPosition()
+
+  miIcono:move(panelPos.x + iconOffset.x, panelPos.y + iconOffset.y)
+  limpTxt:move(panelPos.x + iconlimpTxt.x, panelPos.y + iconlimpTxt.y)
+  lex:move(panelPos.x + iconlex.x, panelPos.y + iconlex.y)
+  PvPx:move(panelPos.x + iconPvPx.x, panelPos.y + iconPvPx.y)
+  ocultarTechosIcon:move(panelPos.x + iconocultarTechosIcon.x, panelPos.y + iconocultarTechosIcon.y)
+  setProfil:move(panelPos.x + iconsetProfil.x, panelPos.y + iconsetProfil.y)
+  m:move(panelPos.x + iconm.x, panelPos.y + iconm.y)
+  Uplv:move(panelPos.x + iconUplv.x, panelPos.y + iconUplv.y)
+  Downlv:move(panelPos.x + iconDownlv.x, panelPos.y + iconDownlv.y)
+end
+
+ui.edit.onClick = function(widget)
+    windowUI:show();
+    windowUI:raise();
+    windowUI:focus();
+end
+
+local mainButton = addIcon("panel", {item=23513,  text = "PANEL"}, function(widget, ok)
+  if ok then
+    ui.edit:onClick()
+   else
+     windowUI:hide()
+    end
+end)
+mainButton:breakAnchors()
+mainButton:move(930, 320)
+mainButton.text:setColor("#66ffff")
+
+-- Centrar la ventana
+local rootSize = g_ui.getRootWidget():getSize()
+local windowUISize = windowUI:getSize()
+local centerX = (rootSize.width - windowUISize.width) / 2
+local centerY = (rootSize.height - windowUISize.height) / 2
+windowUI:move(710, 250)
