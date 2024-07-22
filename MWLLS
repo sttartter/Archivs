@@ -1,0 +1,198 @@
+------- HLDMWWH
+local hold = 0
+local candidates = {}
+local shouldHold = false
+
+local holdMWIcon = addIcon("holdIcon",{item={id= 3147, count=1}, text ="Mw/Wg"}, macro(200, function(m)
+  shouldHold = true
+  schedule(200, function()
+    if m.isOn() then return end
+    shouldHold = false
+    candidates = {}
+    for _, t in ipairs(g_map.getTiles(posz())) do
+      t:setText("")
+    end
+  end)
+end))
+
+holdMWIcon:breakAnchors()
+holdMWIcon:move(62, 220)
+
+  local function botPrintMessage(message)
+    modules.game_textmessage.displayGameMessage(message)
+  end
+  
+  botPrintMessage("Hold MW WG --> (MOD) Made by: OTC")
+
+local m = macro(20, function()
+    if #candidates == 0 then return end
+    for i, pos in pairs(candidates) do
+      local tile = g_map.getTile(pos)
+      if tile then
+        if tile:getText():len() == 0 then 
+          table.remove(candidates, i)
+        end
+        local rune = tile:getText() == "HOLD MW" and 3180 or tile:getText() == "HOLD WG" and 3156
+        if tile:canShoot() and not isInPz() and tile:isWalkable() and tile:getTopUseThing():getId() ~= 2130 then
+          if math.abs(player:getPosition().x-tile:getPosition().x) < 8 and math.abs(player:getPosition().y-tile:getPosition().y) < 6 then
+            rune = findItem(rune)            
+            return useWith(rune, tile:getTopUseThing())
+          end
+        end
+      end
+    end
+end)
+
+onRemoveThing(function(tile, thing)  
+    if thing:getId() ~= 2129 then return end
+    if tile:getText():find("HOLD") then
+        table.insert(candidates, tile:getPosition())
+        local rune = tile:getText() == "HOLD MW" and 3180 or tile:getText() == "HOLD WG" and 3156
+        if math.abs(player:getPosition().x-tile:getPosition().x) < 8 and math.abs(player:getPosition().y-tile:getPosition().y) < 6 then
+          print(rune)
+          rune = findItem(rune)  
+          return useWith(rune, tile:getTopUseThing())
+        end
+    end
+end)
+
+onAddThing(function(tile, thing)  
+    if m.isOff() then return end
+    if thing:getId() ~= 2129 then return end
+    if tile:getText():len() > 0 then
+        table.remove(candidates, table.find(candidates,tile))
+    end
+end)
+
+onUseWith(function(pos, itemId, target, subType)
+    if not shouldHold or (itemId ~= 3180 and itemId ~= 3156 ) then return end
+    
+    hold = now    
+    local tile = g_map.getTile(target:getPosition())
+    if not tile then return end
+
+    if itemId == 3180 then
+  
+        tile:setText("HOLD MW")
+    else
+        tile:setText("HOLD WG")
+    end
+    table.insert(candidates, tile:getPosition()) 
+end)
+
+-----mwCurmw
+
+local mwCursor = addIcon("MagicWall", {item=3180, text="Magic Wall", movable=true, switchable = false}, function()
+  local item = Item.create(3180) 
+  if g_game.getClientVersion() < 780 then
+      local tmpItem = g_game.findPlayerItem(3180, -1) 
+      if not tmpItem then return true end
+      item = tmpItem
+  end
+  modules.game_interface.startUseWith(item, -1) 
+end)
+mwCursor:breakAnchors()
+mwCursor:move(62, 280)
+------- 
+local HoldToggle = macro(100, "",function() end)
+onPlayerPositionChange(function(newPos, oldPos)
+    if oldPos.z ~= posz() then return end
+    if oldPos then
+        local tile = g_map.getTile(oldPos)
+        if HoldToggle.isOn() and tile:isWalkable() then
+            useWith(3180, tile:getTopUseThing())
+        end
+    end
+end)
+local HoldToggle = addIcon("htoggle", {item=3180, text="hold BACKME"}, function(icon, isOn)
+HoldToggle.setOn(isOn)
+end)
+HoldToggle:breakAnchors();
+HoldToggle:move(120, 405);
+-----------
+local mwBack = macro(10, "",function() end) -- taca mw no sqm anterior
+onPlayerPositionChange(function(newPos, oldPos)
+    if oldPos.z ~= posz() then return end
+    if oldPos then
+        local tile = g_map.getTile(oldPos)
+        if mwBack.isOn() and tile:isWalkable() then
+            useWith(3180, tile:getTopUseThing())
+            mwBack.setOff()
+        end
+    end
+end)
+local mwBack = addIcon("mwBack", {item=3180, text="BACKME"},  mwBack )
+mwBack:breakAnchors();
+mwBack:move(120, 350);
+-----------
+local key = F11
+local mwallId = 3180
+local squaresThreshold = 2
+local mwaft = macro(200, "", function()
+local target = g_game.getAttackingCreature()
+      if target then
+local targetPos = target:getPosition()
+local targetDir = target:getDirection()
+local mwallTile
+      if targetDir == 0 then -- north
+        targetPos.y = targetPos.y - squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      elseif targetDir == 1 then -- east
+        targetPos.x = targetPos.x + squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      elseif targetDir == 2 then -- south
+        targetPos.y = targetPos.y + squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      elseif targetDir == 3 then -- west
+        targetPos.x = targetPos.x - squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      end
+   end
+end)
+local mwaft = addIcon("F11", {item=3180, text="Target FRENT"}, function(icon, isOn)
+mwaft.setOn(isOn)
+end)
+mwaft:breakAnchors();
+mwaft:move(180, 350);
+-----------
+local toggle2 = macro(10, "", function() end)
+onCreaturePositionChange(function(creature, newPos, oldPos)
+    if creature == target() or creature == g_game.getFollowingCreature() then
+        if oldPos and oldPos.z == posz() then
+            local tile2 = g_map.getTile(oldPos)
+            if toggle2.isOn() and tile2:isWalkable() then
+                useWith(3180, tile2:getTopUseThing())
+                toggle2.setOff()
+            end 
+        end
+    end
+end)
+toggle = addIcon("toggle2", {item=3180, text="Target DOWN"}, function(icon, isOn) --- tem que auterar o id do item
+toggle2.setOn(isOn)
+end)
+toggle:breakAnchors();
+toggle:move(180, 405);
+---------
+local Ukryj = addIcon("UKRYJ", {item=11612, text="MWs", movable=true}, function(icon, isOn)
+  if isOn then
+    HoldToggle:show()
+    mwBack:show()
+    mwaft:show()
+    toggle:show()
+  else
+    HoldToggle:hide()
+    mwBack:hide()
+    mwaft:hide()
+    toggle:hide()
+  end
+end)
+Ukryj:breakAnchors();
+Ukryj:move(60, 340);
+
+
+
+
