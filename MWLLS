@@ -191,7 +191,7 @@ local Ukryj = addIcon("UKRYJ", {item=11612, text="MWs", movable=true}, function(
   end
 end)
 Ukryj:breakAnchors();
-Ukryj:move(60, 403);
+Ukryj:move(60, 405);
 
 
 
