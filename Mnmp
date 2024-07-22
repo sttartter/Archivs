@@ -1,0 +1,70 @@
+local minimapWindow = modules.game_minimap.minimapWindow
+local rootWidget = g_ui.getRootWidget()
+local lastPos = {x = 150, y = 100}
+local tam = math.floor(rootWidget:getRect().height/1.8)
+local miniMapIcon = addIcon("toggleMiniMap", {item=43739, text="MAP"}, function(icon, isOn)
+    if isOn then
+        minimapWindow:setParent(modules.game_interface.getRootPanel())
+        minimapWindow:show()
+        minimapWindow:move(lastPos.x, lastPos.y)
+        minimapWindow:resize(tam, tam)
+    else
+        minimapWindow:setParent(modules.game_interface.getRightPanel())
+        minimapWindow:hide()
+        minimapWindow:resize(192, 150)
+        minimapWindow:setMarginLeft(0)
+    end
+end)
+
+local copyOnDrag = minimapWindow.onDragLeave
+
+minimapWindow.onDragLeave = function(widget, droppedWidget, mousePos)
+    copyOnDrag(widget, droppedWidget, mousePos)
+    lastPos = {x = minimapWindow:getX(), y = minimapWindow:getY()}
+end
+
+rootWidget.onGeometryChange[7] = function(widget)
+    if minimapWindow:isHidden() then return end
+    tam = math.floor(rootWidget:getRect().height/1.8)
+    minimapWindow:resize(tam, tam)
+end
+
+
+
+local function activeDrag(icon, nameMacro, position)
+  icon:breakAnchors()
+  icon:move(position.posX or 60, position.posY or 350)
+
+  local dobleclick = false
+  icon.onDoubleClick = function()
+    dobleclick = true
+    schedule(1500, function()
+      dobleclick = false
+    end)
+  end
+
+  icon.onDragEnter = function(widget, mousePos)
+    if not dobleclick and not g_keyboard.isKeyPressed("F1") then
+      return false
+    end
+    icon:breakAnchors()
+    icon.movingReference = { x = mousePos.x - icon:getX(), y = mousePos.y - icon:getY() }
+    dobleclick = false
+    return true
+  end
+
+  icon.onDragMove = function(widget, mousePos, moved)
+    local parentRect = widget:getParent():getRect()
+    local x = math.min(math.max(parentRect.x, mousePos.x - widget.movingReference.x), parentRect.x + parentRect.width - widget:getWidth())
+    local y = math.min(math.max(parentRect.y - widget:getParent():getMarginTop(), mousePos.y - widget.movingReference.y), parentRect.y + parentRect.height - widget:getHeight())
+    widget:move(x, y)
+    icon.moving = { x = icon:getX(), y = icon:getY() }
+    return true
+  end
+
+  icon.onDragLeave = function(widget, pos)
+    storage[nameMacro] = { posX = icon.moving.x, posY = icon.moving.y }
+  end
+end
+
+activeDrag(miniMapIcon, 'toggleMiniMap', storage.toggleMiniMap or {})
