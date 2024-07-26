@@ -123,8 +123,6 @@ local setProfil = addIcon("onetwo",  {item = 31514, text = "PROFIL"}, function()
                     modules.client_options.setOption('profile', 2)
                 elseif vocationName == "sorcerer" then
                     modules.client_options.setOption('profile', 3)
-                elseif vocationName == "knight" then
-                    modules.client_options.setOption('profile', 4)
                 end
                 break -- Exit loop since we found a match
             end
