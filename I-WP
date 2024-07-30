@@ -240,7 +240,7 @@ local mainButton = addIcon("panel", {item=23513,  text = "PANEL"}, function(widg
     end
 end)
 mainButton:breakAnchors()
-mainButton:move(1070, 300)
+mainButton:move(1100, 300)
 mainButton.text:setColor("#66ffff")
 
 -- Centrar la ventana
