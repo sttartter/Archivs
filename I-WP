@@ -240,7 +240,7 @@ local mainButton = addIcon("panel", {item=23513,  text = "PANEL"}, function(widg
     end
 end)
 mainButton:breakAnchors()
-mainButton:move(1070, 290)
+mainButton:move(1080, 290)
 
 -- Centrar la ventana
 local rootSize = g_ui.getRootWidget():getSize()
@@ -248,14 +248,4 @@ local windowUISize = windowUI:getSize()
 local centerX = (rootSize.width - windowUISize.width) / 2
 local centerY = (rootSize.height - windowUISize.height) / 2
 windowUI:move(150, 200)
-
-
-
-
-
-
-
-
-
-
 
