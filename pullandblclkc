@@ -1,0 +1,73 @@
+if not storage.PushMaxIcons then
+    storage.PushMaxIcons = {}
+end
+
+local settings = storage.PushMaxIcons
+
+local fireFieldId = 3197
+
+local iconsData = table.empty(settings) and {
+    {imgId = 8647, name="NWEST", hotkey = "7", x= -1, y=-1, initialPosX = 120, initialPosY = 220},
+    {imgId = 8650, name="NORTH", hotkey = "8", x= 0, y=-1, initialPosX = 170, initialPosY = 220},
+    {imgId = 8647, name="NEAST", hotkey = "9", x= 1, y=-1, initialPosX = 220, initialPosY = 220},
+    {imgId = 8650, name="EAST", hotkey = "6", x= 1, y=0, initialPosX = 220, initialPosY = 275},
+    {imgId = 8650, name="WEST", hotkey = "4", x= -1, y=0, initialPosX = 120, initialPosY = 275},
+    {imgId = 8647, name="SWEST", hotkey = "1", x= -1, y=1, initialPosX = 120, initialPosY = 330},
+    {imgId = 8650, name="SUR", hotkey = "2", x= 0, y=1, initialPosX = 170, initialPosY = 330},
+    {imgId = 8647, name="SE", hotkey = "3", x= 1, y=1, initialPosX = 220, initialPosY = 330}
+} or settings
+
+setDefaultTab("main")
+
+local iconos = {}
+
+for _, data in ipairs(iconsData) do
+  local icon = addIcon(_ .. "icons", { item = { id = data.imgId, count = 1 }, text = data.name, hotkey = data.hotkey,}, macro(400, function(m)
+      local target = g_game.getAttackingCreature() or g_game.getFollowingCreature()
+      if not target then return end
+      local targetPos = target:getPosition()
+      local pushTo = { x = targetPos.x + data.x, y = targetPos.y + data.y, z = targetPos.z }
+      local pushToTile = g_map.getTile(pushTo)
+      if not pushToTile or #pushToTile:getCreatures() > 0 or not pushToTile:isWalkable() then
+          return
+      end
+      local targetTile = g_map.getTile(targetPos)
+      if targetTile:getTopUseThing():isPickupable() or not targetTile:getTopUseThing():isNotMoveable() then
+          useWith(fireFieldId, target)
+      end
+      g_game.move(target, pushTo)
+  end))
+    icon:breakAnchors()
+    icon:move(data.initialPosX, data.initialPosY)
+
+    local dobleclick = false
+    icon.onDoubleClick = function()
+        dobleclick = true
+        schedule(1500, function()
+            dobleclick = false
+        end)
+    end
+    icon.onDragEnter = function(widget, mousePos)
+        if not dobleclick and not g_keyboard.isKeyPressed("F1") then
+            return false
+        end
+        widget:breakAnchors()
+        widget.movingReference = { x = mousePos.x - widget:getX(), y = mousePos.y - widget:getY() }
+        return true
+    end
+
+    icon.onDragLeave = function(widget, pos)
+        data.initialPosX = icon:getX()
+        data.initialPosY = icon:getY()
+        storage.PushMaxIcons = iconsData
+    end
+    table.insert(iconos, icon)
+end
+
+hidepush = addIcon("hidepush", {item="", text="Hide PUSH", movable=true,}, function(icon, isOn)
+ for _, icon in ipairs(iconos) do
+   icon:setVisible(isOn)
+ end
+end)
+hidepush:breakAnchors()
+hidepush:move(800,345)
