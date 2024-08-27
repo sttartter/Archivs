@@ -1,0 +1,301 @@
+local cIcon = addIcon("cI",{text="Cave\nBot",switchable=false,moveable=true}, function()
+  if CaveBot.isOff() then 
+    CaveBot.setOn()
+  else 
+    CaveBot.setOff()
+  end
+end)
+cIcon:setSize({height=30,width=50})
+cIcon.text:setFont('verdana-11px-rounded')
+cIcon:breakAnchors();
+cIcon:move(10, 50);
+
+local tIcon = addIcon("tI",{text="Target\nBot",switchable=false,moveable=true}, function()
+  if TargetBot.isOff() then 
+    TargetBot.setOn()
+  else 
+    TargetBot.setOff()
+  end
+end)
+tIcon:setSize({height=30,width=50})
+tIcon.text:setFont('verdana-11px-rounded')
+tIcon:breakAnchors();
+tIcon:move(70, 50);
+
+macro(50,function()
+  if CaveBot.isOn() then
+    cIcon.text:setColoredText({"Cave Bot\n","white","ON","green"})
+  else
+    cIcon.text:setColoredText({"Cave Bot\n","white","OFF","red"})
+  end
+  if TargetBot.isOn() then
+    tIcon.text:setColoredText({"Target Bot\n","white","ON","green"})
+  else
+    tIcon.text:setColoredText({"Target Bot\n","white","OFF","red"})
+  end
+end)
+
+local aBot = addIcon("cI",{text="Attack Bot",switchable=false,moveable=true}, function()
+  if AttackBot.isOff() then 
+    AttackBot.setOn()
+  else 
+    AttackBot.setOff()
+  end
+end)
+aBot:setSize({height=30,width=50})
+aBot.text:setFont('verdana-11px-rounded')
+aBot:breakAnchors();
+aBot:move(293, 455);
+
+macro(50,function()
+  if AttackBot.isOn() then
+    aBot.text:setColoredText({"ATTACK BOT\n","white","- ON -","green"})
+  else
+    aBot.text:setColoredText({"Attack Bot\n","white","- OFF -","red"})
+  end
+end)
+
+local cancelAtaq = addIcon("stopAttack", {item = 3442, text = "STOP ATTAK", switchable = false}, function(widget, isOn)
+    g_game.cancelAttackAndFollow()
+    g_game.cancelAttackAndFollow()
+    g_game.cancelAttackAndFollow()
+end)
+cancelAtaq:breakAnchors();
+cancelAtaq:move(370, 440);
+
+local xura = macro(90, function()
+    if hppercent() <= 99 then
+        say("Exura Vita")
+    end
+end)
+
+local xura = addIcon("xura", {text = "VITA"}, function(self, isOn)
+    self.item:setItemId(isOn and 30060 or 30059)
+    xura.setOn(isOn)
+end)
+xura:breakAnchors();
+xura:move(540, 17);
+
+UI.Label("Mana shield spell:")
+UI.TextEdit(storage.manaShield or "utamo vita", function(widget, newText)
+  storage.manaShield = newText
+end)
+
+local lastManaShield = 0
+local fullUta = macro(20, "", function() 
+  if hasManaShield() or lastManaShield + 90000 > now then return end
+  if TargetBot then 
+    TargetBot.saySpell(storage.manaShield) -- sync spell with targetbot if available
+  else
+    say(storage.manaShield)
+  end
+end)
+fullUta = addIcon("utamV", {item=36673, text="UTAMO"}, fullUta)
+fullUta:breakAnchors();
+fullUta:move(210, 30);
+
+local utamoHp = 60 
+local exuraHp = 99
+local safeMana = 20
+local uExa = macro(400, "", function()
+    if hppercent() <= utamoHp and not hasManaShield() and manapercent() > safeMana then
+        say("utamo vita")
+    elseif hasManaShield() and (hppercent() >= exuraHp or manapercent() < safeMana) then
+        say("exana vita")
+    end
+end)
+uExa = addIcon("uExa", {item= 14760, text="U EXANA"}, uExa)
+uExa:breakAnchors();
+uExa:move(270, 30);
+
+local ssaMightr = macro(190, "", function()
+ if hppercent() <= hpPercent then
+      if getNeck() == nil or getNeck():getId() ~= amulet then
+        g_game.equipItemId(amulet)
+end
+
+ if getFinger() == nil or getFinger():getId() ~= might then
+    g_game.equipItemId(might)
+    end
+  end
+end)
+ssaMightr = addIcon("uba", {item= 11468, text="SSA"}, ssaMightr)
+ssaMightr:breakAnchors()
+ssaMightr:move(840, 25)
+
+local colocaring = 55; 
+local tiraring = 75; 
+local ergyRing = macro(25, "", function()
+  if (hppercent() <= colocaring) then
+    local ring1 = findItem(3051) 
+    if (ring1) then
+        g_game.move(ring1, {x=65535, y=SlotFinger, z=0}, 1);
+    end
+  elseif (hppercent() >= tiraring) then
+     local ring2 = findItem(31616) 
+     if (ring2) then
+        g_game.move(ring2, {x=65535, y=SlotFinger, z=0}, 1);
+    end 
+  end
+end)
+ergyRing = addIcon("ErgyRing", {item= 39185, text="ENERGY"}, ergyRing)
+ergyRing:breakAnchors()
+ergyRing:move(790, 25)
+
+test = addIcon("test", {item =16201, text = "FOLLOW"}, 
+macro(250, "", function()
+   if g_game.isOnline() and g_game.isAttacking() then
+         g_game.setChaseMode(1)
+           end
+           end) )
+test:breakAnchors()
+test:move(10, 90)
+
+local oldTarget = macro(400, "", nil, function()
+  if g_game.isAttacking() then
+    oldTarget = g_game.getAttackingCreature()
+  end
+  if (oldTarget and oldTarget:getPosition()) then
+    if (not g_game.isAttacking() and getDistanceBetween(pos(), oldTarget:getPosition()) <= 8) then
+      if (oldTarget:getPosition().z == posz()) then
+        g_game.attack(oldTarget)
+      end
+    end
+ end
+end)
+
+oldTarget = addIcon("oldTtarget", {item =2025, text = "HOLD", hotkey = "F1"}, oldTarget )
+oldTarget:breakAnchors();
+oldTarget:move(70, 90);
+
+local dropItems = { 3492, 3590, 3031 }
+local maxStackedItems = 5
+local dropDelay = 50
+
+apush2 = addIcon("AntiPush", {item={id=38376,count=1}, movable=true, text="Anti Push"},
+macro(dropDelay , "", function()
+  local tile = g_map.getTile(pos())
+  if tile and tile:getThingCount() < maxStackedItems then
+    local thing = tile:getTopThing()
+    if thing and not thing:isNotMoveable() then
+      for i, item in pairs(dropItems) do
+        if item ~= thing:getId() then
+            local dropItem = findItem(item)
+            if dropItem then
+              g_game.move(dropItem, pos(), 1)
+            end
+        end
+      end
+    end
+  end
+end))
+apush2:breakAnchors();
+apush2:move(70, 150);
+
+
+local aPushTrash = macro(255, "", function()
+    local trashitem = nil
+    for _, tile in pairs(g_map.getTiles(posz())) do
+        if distanceFromPlayer(tile:getPosition()) == 1 and #tile:getItems() ~= 0 and not tile:getTopUseThing():isNotMoveable() then
+            trashitem = tile:getTopUseThing()
+            g_game.move(trashitem, pos(), trashitem:getCount())
+            return
+        end
+    end
+ end)
+aPushTrash = addIcon("trashieeantPush", {item =38376, text = "Ant Push Trash"}, aPushTrash )
+aPushTrash:breakAnchors();
+aPushTrash:move(10, 150);
+
+local limpTxt = macro(500, "", function() modules.game_textmessage.clearMessages()
+  g_map.cleanTexts()
+
+end)
+limpTxt = addIcon("NoOrangeTxt", {item= 35614,  text="HIDE TEXTs"}, limpTxt)
+limpTxt:breakAnchors();
+limpTxt:move(330, 30);
+
+function distanceFromPlayer(position)
+    local playerPosition = g_game.getLocalPlayer():getPosition()
+    return math.max(math.abs(playerPosition.x - position.x), math.abs(playerPosition.y - position.y))
+end
+--[Use All]
+--Modded from vBot 4.8
+storage.shovel = 3457
+storage.rope = 3003
+storage.machete = 3308
+storage.scythe = 3453
+
+local useId = { 34847, 1764, 21051, 30823, 6264, 5282, 20453, 20454, 20474, 11708, 11705, 
+                6257, 6256, 2772, 27260, 2773, 1632, 1633, 1948, 435, 6252, 6253, 5007, 4911, 
+                1629, 1630, 5108, 5107, 5281, 1968, 435, 1948, 5542, 31116, 31120, 30742, 31115, 
+                31118, 20474, 5737, 5736, 5734, 5733, 31202, 31228, 31199, 31200, 33262, 30824, 
+                5125, 5126, 5116, 5117, 8257, 8258, 8255, 8256, 5120, 30777, 30776, 23873, 23877,
+                5736, 6264, 31262, 31130, 31129, 6250, 6249, 5122, 30049, 7131, 7132, 7727 }
+local shovelId = { 606, 593, 867, 608 }
+local ropeId = { 17238, 12202, 12935, 386, 421, 21966, 14238 }
+local macheteId = { 2130, 3696 }
+local scytheId = { 3653 }
+
+test = macro(530, "", function(self)
+    for _, tile in pairs(g_map.getTiles(posz())) do
+        if distanceFromPlayer(tile:getPosition()) < 2 then
+            for _, item in pairs(tile:getItems()) do
+                -- use
+                if table.find(useId, item:getId()) then
+                    use(item)
+                    test.setOff()
+                    return
+                elseif table.find(shovelId, item:getId()) then
+                    useWith(storage.shovel, item)
+                    test.setOff()
+                    return
+                elseif table.find(ropeId, item:getId()) then
+                    useWith(storage.rope, item) 
+                    test.setOff()
+                    return
+                elseif table.find(macheteId, item:getId()) then
+                    useWith(storage.machete, item)
+                    test.setOff()
+                    return
+                elseif table.find(scytheId, item:getId()) then
+                    useWith(storage.scythe, item)
+                    test.setOff()
+                    return
+                end
+            end
+        end
+    end
+ self.setOn(false)
+end)
+
+test1 = addIcon("test", {item =19083, text = "USE ALL", switchable = false}, function()
+    if test.isOn() then
+        test.setOff()
+    else
+        test.setOn()
+    end
+end)
+test1:breakAnchors()
+test1:move(230, 440)
+
+
+local izqder = macro(225, "", function()
+    local randomTurn = math.random(1, 2) == 1 and 1 or 3
+    turn(randomTurn)
+end)
+izqder = addIcon("izqderturn", {item= 23524,  text="< | >"}, izqder)
+izqder:breakAnchors()
+izqder:move(650, 440)
+
+local PvPx = addIcon("onetwo", {item =37337, text = "PVP"}, function(icon, isOn)
+    return g_game.setSafeFight(not isOn) 
+end)
+PvPx:breakAnchors();
+PvPx:move(740, 25);
+
+
+UI.Separator()
+local healthId = 3160 local healthPercent = 70 macro(2000, "Vida UH 70%", function() if (hppercent() <= healthPercent) then usewith(healthId, player) end end)
+
+local healthId = 3152 local healthPercent = 70 macro(2000, " Vida IH 70%", function() if (hppercent() <= healthPercent) then usewith(healthId, player) end end)
