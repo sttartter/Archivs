@@ -1,4 +1,4 @@
-------- HLDMWWH
+
 local hold = 0
 local candidates = {}
 local shouldHold = false
@@ -16,7 +16,7 @@ local holdMWIcon = addIcon("holdIcon",{item={id= 3147, count=1}, text ="Mw/Wg"},
 end))
 
 holdMWIcon:breakAnchors()
-holdMWIcon:move(62, 220)
+holdMWIcon:move(185, 30)
 
   local function botPrintMessage(message)
     modules.game_textmessage.displayGameMessage(message)
@@ -82,7 +82,7 @@ end)
 
 -----mwCurmw
 
-local mwCursor = addIcon("MagicWall", {item=3180, text="Magic Wall", movable=true, switchable = false}, function()
+local mwCursor = addIcon("MagicWall", {item=2129, text="Magic Wall", movable=true, switchable = false}, function()
   local item = Item.create(3180) 
   if g_game.getClientVersion() < 780 then
       local tmpItem = g_game.findPlayerItem(3180, -1) 
@@ -92,7 +92,7 @@ local mwCursor = addIcon("MagicWall", {item=3180, text="Magic Wall", movable=tru
   modules.game_interface.startUseWith(item, -1) 
 end)
 mwCursor:breakAnchors()
-mwCursor:move(62, 280)
+mwCursor:move(62, 220)
 ------- 
 local HoldToggle = macro(100, "",function() end)
 onPlayerPositionChange(function(newPos, oldPos)
@@ -108,7 +108,7 @@ local HoldToggle = addIcon("htoggle", {item=3180, text="hold BACKME"}, function(
 HoldToggle.setOn(isOn)
 end)
 HoldToggle:breakAnchors();
-HoldToggle:move(120, 405);
+HoldToggle:move(73, 360);
 -----------
 local mwBack = macro(10, "",function() end) -- taca mw no sqm anterior
 onPlayerPositionChange(function(newPos, oldPos)
@@ -123,7 +123,7 @@ onPlayerPositionChange(function(newPos, oldPos)
 end)
 local mwBack = addIcon("mwBack", {item=3180, text="BACKME"},  mwBack )
 mwBack:breakAnchors();
-mwBack:move(120, 350);
+mwBack:move(73, 290);
 -----------
 local key = F11
 local mwallId = 3180
@@ -153,11 +153,11 @@ local mwallTile
       end
    end
 end)
-local mwaft = addIcon("F11", {item=3180, text="Target FRENT"}, function(icon, isOn)
+local mwaft = addIcon("F11", {item=3180, text="T-FACE"}, function(icon, isOn)
 mwaft.setOn(isOn)
 end)
 mwaft:breakAnchors();
-mwaft:move(180, 350);
+mwaft:move(135, 380);
 -----------
 local toggle2 = macro(10, "", function() end)
 onCreaturePositionChange(function(creature, newPos, oldPos)
@@ -171,11 +171,11 @@ onCreaturePositionChange(function(creature, newPos, oldPos)
         end
     end
 end)
-toggle = addIcon("toggle2", {item=3180, text="Target DOWN"}, function(icon, isOn) --- tem que auterar o id do item
+toggle = addIcon("toggle2", {item=3180, text="T-DOWN"}, function(icon, isOn) --- tem que auterar o id do item
 toggle2.setOn(isOn)
 end)
 toggle:breakAnchors();
-toggle:move(180, 405);
+toggle:move(135, 440);
 ---------
 local Ukryj = addIcon("UKRYJ", {item=11612, text="MWs", movable=true}, function(icon, isOn)
   if isOn then
@@ -191,8 +191,4 @@ local Ukryj = addIcon("UKRYJ", {item=11612, text="MWs", movable=true}, function(
   end
 end)
 Ukryj:breakAnchors();
-Ukryj:move(60, 405);
-
-
-
-
+Ukryj:move(72, 426);
