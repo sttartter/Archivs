@@ -82,7 +82,7 @@ end)
 
 -----mwCurmw
 
-local mwCursor = addIcon("MagicWall", {item=2129, text="Magic Wall", movable=true, switchable = false}, function()
+local mwCursor = addIcon("MagicWall", {item=23511, text="Magic WALL", movable=true, switchable = false}, function()
   local item = Item.create(3180) 
   if g_game.getClientVersion() < 780 then
       local tmpItem = g_game.findPlayerItem(3180, -1) 
