@@ -92,7 +92,7 @@ local mwCursor = addIcon("MagicWall", {item=2129, text="Magic Wall", movable=tru
   modules.game_interface.startUseWith(item, -1) 
 end)
 mwCursor:breakAnchors()
-mwCursor:move(840, 440)
+mwCursor:move(780, 440)
 ------- 
 local HoldToggle = macro(100, "",function() end)
 onPlayerPositionChange(function(newPos, oldPos)
