@@ -123,7 +123,7 @@ onPlayerPositionChange(function(newPos, oldPos)
 end)
 local mwBack = addIcon("mwBack", {item=3180, text="BACKME"},  mwBack )
 mwBack:breakAnchors();
-mwBack:move(73, 290);
+mwBack:move(700, 440);
 -----------
 local key = F11
 local mwallId = 3180
