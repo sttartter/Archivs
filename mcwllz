@@ -16,7 +16,7 @@ local holdMWIcon = addIcon("holdIcon",{item={id= 3147, count=1}, text ="Mw/Wg"},
 end))
 
 holdMWIcon:breakAnchors()
-holdMWIcon:move(185, 30)
+holdMWIcon:move(150, 30)
 
   local function botPrintMessage(message)
     modules.game_textmessage.displayGameMessage(message)
