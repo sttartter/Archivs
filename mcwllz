@@ -92,7 +92,7 @@ local mwCursor = addIcon("MagicWall", {item=2129, text="Magic Wall", movable=tru
   modules.game_interface.startUseWith(item, -1) 
 end)
 mwCursor:breakAnchors()
-mwCursor:move(62, 220)
+mwCursor:move(720, 440)
 ------- 
 local HoldToggle = macro(100, "",function() end)
 onPlayerPositionChange(function(newPos, oldPos)
@@ -123,7 +123,7 @@ onPlayerPositionChange(function(newPos, oldPos)
 end)
 local mwBack = addIcon("mwBack", {item=3180, text="BACKME"},  mwBack )
 mwBack:breakAnchors();
-mwBack:move(700, 440);
+mwBack:move(73, 290);
 -----------
 local key = F11
 local mwallId = 3180
