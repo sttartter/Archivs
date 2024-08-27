@@ -45,7 +45,7 @@ end)
 aBot:setSize({height=30,width=50})
 aBot.text:setFont('verdana-11px-rounded')
 aBot:breakAnchors();
-aBot:move(293, 455);
+aBot:move(313, 455);
 
 macro(50,function()
   if AttackBot.isOn() then
@@ -61,7 +61,7 @@ local cancelAtaq = addIcon("stopAttack", {item = 3442, text = "STOP ATTAK", swit
     g_game.cancelAttackAndFollow()
 end)
 cancelAtaq:breakAnchors();
-cancelAtaq:move(370, 440);
+cancelAtaq:move(390, 440);
 
 local xura = macro(90, function()
     if hppercent() <= 99 then
@@ -277,14 +277,14 @@ test1 = addIcon("test", {item =19083, text = "USE ALL", switchable = false}, fun
     end
 end)
 test1:breakAnchors()
-test1:move(230, 440)
+test1:move(220, 440)
 
 
 local izqder = macro(225, "", function()
     local randomTurn = math.random(1, 2) == 1 and 1 or 3
     turn(randomTurn)
 end)
-izqder = addIcon("izqderturn", {item= 23524,  text="< | >"}, izqder)
+izqder = addIcon("izqderturn", {item= 23511,  text="< | >"}, izqder)
 izqder:breakAnchors()
 izqder:move(650, 440)
 
