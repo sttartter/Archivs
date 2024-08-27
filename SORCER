@@ -45,7 +45,7 @@ end)
 aBot:setSize({height=30,width=50})
 aBot.text:setFont('verdana-11px-rounded')
 aBot:breakAnchors();
-aBot:move(3w3, 455);
+aBot:move(323, 455);
 
 macro(50,function()
   if AttackBot.isOn() then
