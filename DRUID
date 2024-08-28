@@ -178,8 +178,8 @@ oldTarget:move(70, 90);
 local dropItems = { 3492, 3590, 3031 }
 local dropDelay = 20
 
-apush2 = addIcon("AntiPush", {item={id=14549,count=1}, movable=true, hotkey="Insert", text="AntiPush"},
-macro(dropDelay ,  function()
+local apush2 = addIcon("AntiPush2", {item={id=14549,count=1}, movable=true, hotkey="Insert", text="AntiPush"},
+macro(dropDelay, "", function()
   local tile = g_map.getTile(pos())
   if not tile then return end
     local thing = tile:getTopUseThing()
