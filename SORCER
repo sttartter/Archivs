@@ -108,6 +108,10 @@ uExa = addIcon("uExa", {item= 14760, text="U EXANA"}, uExa)
 uExa:breakAnchors();
 uExa:move(270, 30);
 
+local amulet = 3081
+local might = 3048
+local hpPercent = 80
+
 local ssaMightr = macro(190, "", function()
  if hppercent() <= hpPercent then
       if getNeck() == nil or getNeck():getId() ~= amulet then
