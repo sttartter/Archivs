@@ -63,7 +63,7 @@ end)
 cancelAtaq:breakAnchors();
 cancelAtaq:move(400, 440);
 
-local hpPercent = 99
+local hpPercent = 97
 local xura = macro(50, "",  function()
   if (hppercent() <= hpPercent) then
   say(storage.HealText)
