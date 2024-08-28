@@ -63,6 +63,22 @@ end)
 cancelAtaq:breakAnchors();
 cancelAtaq:move(400, 440);
 
+local hpPercent = 99
+local xura = macro(50, "",  function()
+  if (hppercent() <= hpPercent) then
+  say(storage.HealText)
+end
+end)
+addTextEdit("HealText", storage.HealText or "exura vita", function(widget, text) 
+storage.HealText = text
+end)
+local xura = addIcon("xura", {text = "VITA"}, function(self, isOn)
+    self.item:setItemId(isOn and 30060 or 30059)
+    xura.setOn(isOn)
+end)
+xura:breakAnchors();
+xura:move(540, 17);
+
 UI.Label("Mana shield spell:")
 UI.TextEdit(storage.manaShield or "utamo vita", function(widget, newText)
   storage.manaShield = newText
