@@ -195,7 +195,7 @@ macro(dropDelay ,  function()
     end
 end))
 apush2:breakAnchors();
-apush2:move(200, 50);
+apush2:move(70, 150);
 
 
 local aPushTrash = macro(255, "", function()
