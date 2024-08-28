@@ -176,15 +176,14 @@ oldTarget:breakAnchors();
 oldTarget:move(70, 90);
 
 local dropItems = { 3492, 3590, 3031 }
-local maxStackedItems = 5
-local dropDelay = 50
+local dropDelay = 20
 
-apush2 = addIcon("AntiPush", {item={id=38376,count=1}, movable=true, text="Anti Push"},
-macro(dropDelay , "", function()
+apush2 = addIcon("AntiPush", {item={id=14549,count=1}, movable=true, hotkey="Insert", text="AntiPush"},
+macro(dropDelay ,  function()
   local tile = g_map.getTile(pos())
-  if tile and tile:getThingCount() < maxStackedItems then
-    local thing = tile:getTopThing()
-    if thing and not thing:isNotMoveable() then
+  if not tile then return end
+    local thing = tile:getTopUseThing()
+    if thing and not thing:isStackable() then
       for i, item in pairs(dropItems) do
         if item ~= thing:getId() then
             local dropItem = findItem(item)
@@ -194,10 +193,9 @@ macro(dropDelay , "", function()
         end
       end
     end
-  end
 end))
 apush2:breakAnchors();
-apush2:move(70, 150);
+apush2:move(200, 50);
 
 
 local aPushTrash = macro(255, "", function()
