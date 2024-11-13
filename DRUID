@@ -130,8 +130,8 @@ ssaMightr = addIcon("uba", {item= 11468, text="SSA"}, ssaMightr)
 ssaMightr:breakAnchors()
 ssaMightr:move(840, 25)
 
-local colocaring = 55; 
-local tiraring = 75; 
+local colocaring = 60; 
+local tiraring = 79; 
 local ergyRing = macro(25, "", function()
   if (hppercent() <= colocaring) then
     local ring1 = findItem(3051) 
