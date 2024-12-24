@@ -1,0 +1,165 @@
+-------------------
+-- RUNES
+-------------------
+
+
+UI.Separator()
+local ui = setupUI([[
+Panel
+  height: 19
+
+  Button
+    id: edit
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-align: center
+    height: 18
+    !text: tr('PANEL')
+    color: red
+]])
+
+local windowUI = setupUI([[
+UIWindow
+  size: 200 110
+
+  Panel
+    id: bkg
+    opacity: 0.7
+    background-color: gray
+    anchors.fill: parent
+
+  Panel
+    id: titlePanel
+    anchors.top: parent.top
+    anchors.left: parent.horizontalCenter
+    text-align: center
+    text-offset: 0 0
+    margin-left: -92
+    color: #99d6ff
+
+  Label
+    text:
+    margin-top: -3
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-wrap: true
+    text-auto-resize: true
+    text-align: left
+
+]], g_ui.getRootWidget());
+windowUI:hide();
+
+local Avva = macro(200, "", function()
+if g_game.isAttacking() then
+usewith(3161, g_game.getAttackingCreature())
+delay(1050)
+end
+end)
+Avva = addIcon("uEVVAa", {item= 3161, text="AVVAA"}, Avva)
+
+local greatFb = macro(200, "", function()
+    if g_game.isAttacking() then
+        usewith(3191, g_game.getAttackingCreature())
+        delay(1050)
+    end
+end)
+greatFb = addIcon("ugfba", {item= 3191, text="GFB"}, greatFb)
+
+
+local explois = macro(200, "", function()
+    if g_game.isAttacking() then
+        usewith(3200, g_game.getAttackingCreature())
+        delay(1050)
+    end
+end)
+
+explois = addIcon("explossion", {item= 3200, text="XPLOSN"}, explois)
+
+local rthStorm = macro(200, "", function()
+    if g_game.isAttacking() then
+        usewith(3202, g_game.getAttackingCreature())
+        delay(1050)
+    end
+end)
+
+rthStorm = addIcon("tunderStormRN", {item= 3202, text="TUNDER"}, rthStorm)
+
+local SShower = macro(200, "", function()
+    if g_game.isAttacking() then
+        usewith(3175, g_game.getAttackingCreature())
+        delay(1050)
+    end
+end)
+
+SShower = addIcon("stoneshow", {item= 3175, text="SHOWER"}, SShower)
+
+fireB = macro(700, "", function()
+    if g_game.isAttacking() then
+        usewith(3192, g_game.getAttackingCreature())
+        delay(700)
+    end
+end)
+fireB = addIcon("firebomb", {item=3192, text="Fire-B"}, fireB)
+
+---------
+
+local miPanel = windowUI:recursiveGetChildById('bkg')
+miPanel:addChild(Avva)
+miPanel:addChild(greatFb)
+miPanel:addChild(explois)
+miPanel:addChild(rthStorm)
+miPanel:addChild(SShower)
+miPanel:addChild(fireB)
+
+------ Edita la posición del icono dentro del panel bkg
+local iconAvva = {x = 10, y = -1}
+local icongreatFb = {x = 70, y = -1}
+local iconexplois = {x = 130, y = -1}
+local iconrthStorm= {x = 10, y = 61}
+local iconSShower= {x = 70, y = 61}
+local iconfireB= {x = 130, y = 61}
+
+------ Define la posición inicial del icono
+Avva:move(iconAvva.x, iconAvva.y)
+greatFb:move(icongreatFb.x, greatFb.y)
+explois:move(iconexplois.x, explois.y)
+rthStorm:move(iconrthStorm.x, rthStorm.y)
+SShower:move(iconSShower.x, SShower.y)
+fireB:move(iconfireB.x, fireB.y)
+
+miPanel.onGeometryChange = function()
+  local panelPos = miPanel:getPosition()
+
+  Avva:move(panelPos.x + iconAvva.x, panelPos.y + iconAvva.y)
+  greatFb:move(panelPos.x + icongreatFb.x, panelPos.y + icongreatFb.y)
+  explois:move(panelPos.x + iconexplois.x, panelPos.y + iconexplois.y)
+  rthStorm:move(panelPos.x + iconrthStorm.x, panelPos.y + iconrthStorm.y)
+  SShower:move(panelPos.x + iconSShower.x, panelPos.y + iconSShower.y)
+  fireB:move(panelPos.x + iconfireB.x, panelPos.y + iconfireB.y)
+end
+
+ui.edit.onClick = function(widget)
+    windowUI:show();
+    windowUI:raise();
+    windowUI:focus();
+end
+
+local mainButton = addIcon("panel", {item=23513,  text = "PANEL"}, function(widget, ok)
+  if ok then
+    ui.edit:onClick()
+   else
+     windowUI:hide()
+    end
+end)
+mainButton:breakAnchors()
+mainButton:move(920, 330)
+
+-- Centrar la ventana
+local rootSize = g_ui.getRootWidget():getSize()
+local windowUISize = windowUI:getSize()
+local centerX = (rootSize.width - windowUISize.width) / 2
+local centerY = (rootSize.height - windowUISize.height) / 2
+windowUI:move(920, 210)
+
+-------------
