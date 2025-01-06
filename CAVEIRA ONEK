@@ -1,0 +1,2195 @@
+local cIcon = addIcon("cI",{text="Cave\nBot",switchable=false,moveable=true}, function()
+  if CaveBot.isOff() then 
+    CaveBot.setOn()
+  else 
+    CaveBot.setOff()
+  end
+end)
+cIcon:setSize({height=30,width=50})
+cIcon.text:setFont('verdana-11px-rounded')
+ 
+local tIcon = addIcon("tI",{text="Target\nBot",switchable=false,moveable=true}, function()
+  if TargetBot.isOff() then 
+    TargetBot.setOn()
+  else 
+    TargetBot.setOff()
+  end
+end)
+tIcon:setSize({height=30,width=50})
+tIcon.text:setFont('verdana-11px-rounded')
+ 
+macro(50,function()
+  if CaveBot.isOn() then
+    cIcon.text:setColoredText({"Cave Bot\n","white","ON","green"})
+  else
+    cIcon.text:setColoredText({"Cave Bot\n","white","OFF","red"})
+  end
+  if TargetBot.isOn() then
+    tIcon.text:setColoredText({"Target Bot\n","white","ON","green"})
+  else
+    tIcon.text:setColoredText({"Target Bot\n","white","OFF","red"})
+  end
+end)
+ 
+ 
+local aBot = addIcon("aBot",{text="Attack Bot",switchable=false,moveable=true}, function()
+  if AttackBot.isOff() then 
+    AttackBot.setOn()
+  else 
+    AttackBot.setOff()
+  end
+end)
+aBot:setSize({height=30,width=50})
+aBot.text:setFont('verdana-11px-rounded')
+ 
+macro(50,function()
+  if AttackBot.isOn() then
+    aBot.text:setColoredText({"ATTACK BOT\n","white","ON","green"})
+  else
+    aBot.text:setColoredText({"Attack Bot\n","white","OFF","red"})
+  end
+end)
+ 
+ 
+ 
+  if not storage.AntiPushItems then
+    storage.AntiPushItems = "3031,3035"
+  end
+
+  addSeparator()
+  addLabel("antiPushItemsLabel", "Anti Push Items:")
+  addTextEdit("antiPushItemsTxtEdit", storage.AntiPushItems, function(widget, text)
+    storage.AntiPushItems = text
+  end)
+  addSeparator()
+
+  local function stringToTable(inputstr, sep)
+    if sep == nil then
+      sep = ","
+    end
+    local t = {}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+          table.insert(t, tonumber(str))
+    end
+    return t
+  end
+
+  local goldIds = 
+  {
+    [3031] = 3035,
+    [3035] = 3043
+  }
+
+  local function AntiPush()
+    local dropItems = stringToTable(storage.AntiPushItems)
+    local tile = g_map.getTile(pos())
+    if not tile  then return end
+    local thing = tile:getTopThing()
+    if not thing then return end
+    for i, item in pairs(dropItems) do
+      if item ~= thing:getId() then
+        local dropItem = findItem(item)
+        if dropItem then
+          if dropItem:getCount() == 1 then
+            g_game.move(dropItem, pos(), 1)
+          else
+            g_game.move(dropItem, pos(), 2)
+          end
+        elseif goldIds[item] ~= nil then
+          --change gold
+          local nextCurrency = findItem(goldIds[item])
+          if not nextCurrency then return end
+          g_game.use(nextCurrency)
+        end
+      end
+    end
+  end
+  local isOn = false
+  local antiPushIcon = addIcon("antipushIcon", {item={id=3031, count=1}, text="Anti PUSH"},           
+  macro(600, function(m)
+    AntiPush()
+    isOn = true
+    schedule(600, function() 
+      if m.isOff() then
+       isOn=false 
+      end
+    end)
+  end))
+
+  onPlayerPositionChange(function() 
+    if not isOn then return end
+      AntiPush()
+  end)
+
+  -- antiPushIcon:breakAnchors()
+  -- antipushIcon:move(80,80)
+ 
+local apTrash = macro(200, "", function()
+    local trashitem = nil
+    for _, tile in pairs(g_map.getTiles(posz())) do
+        if distanceFromPlayer(tile:getPosition()) == 1 and #tile:getItems() ~= 0 and not tile:getTopUseThing():isNotMoveable() then
+            trashitem = tile:getTopUseThing()
+            g_game.move(trashitem, pos(), trashitem:getCount())
+            return
+        end
+    end
+ end)
+local apTrash = addIcon("antiPushTrash", {item=11474, text="Anti PUSH TRASH"}, apTrash)
+ 
+local holdPoz = macro(1, "", function(m)
+    posToHold = posToHold or pos()
+    schedule(50, function() if m.isOff() then posToHold = nil end end) 
+    if table.equals(posToHold, pos()) then return end
+    autoWalk(posToHold, 127, {ignoreNonPathable=true, precision=1, ignoreStairs=false})
+end)
+local holdPoz = addIcon("holdPozition", {item=4100, text="Hold POS"}, holdPoz)
+ 
+ 
+local PvPx = addIcon("onetwo", {item =37337, text = "PVP"}, function(icon, isOn)
+    return g_game.setSafeFight(not isOn) 
+end)
+ 
+ 
+local cleenTextz = macro(1100, "", function()
+    modules.game_textmessage.clearMessages()
+    g_map.cleanTexts()
+end)
+local cleenTextz = addIcon("cleanSpamText", {item=1982, text="Limpiar Spam"}, cleenTextz)
+
+
+local vocation
+ 
+local voc_data = { knight = "eq", paladin = "sac", sorcerer = "ven", druid = "dru", }
+ 
+local m = macro(1000, "", function ()
+    if isInPz() then return end
+    if not vocation then
+        g_game.look(player)
+        return
+    end
+    say("utevo gran res " .. voc_data[vocation])
+    delay(10000)
+end)
+ 
+ 
+onTextMessage(function(mode, text)
+    if m:isOff() or not text:find("You see yourself") then return end
+    local re = regexMatch(text, "(knight|sorcerer|druid|paladin)")
+    if #re ~= 0 then
+        vocation = re[1][1]
+    end
+    modules.game_textmessage.clearMessages()
+  end)
+local m = addIcon("sumVoc", {item= 8175,  text="SUMMON"}, m)
+ 
+ 
+local smartsTargets = macro(1000, "", function()
+  local battlelist = getSpectators();
+  local closest = 10
+  local lowesthpc = 101
+  for key, val in pairs(battlelist) do
+    if val:isMonster() then
+      if getDistanceBetween(player:getPosition(), val:getPosition()) <= closest then
+        closest = getDistanceBetween(player:getPosition(), val:getPosition())
+        if val:getHealthPercent() < lowesthpc then
+          lowesthpc = val:getHealthPercent()
+        end
+      end
+    end
+  end
+  for key, val in pairs(battlelist) do
+    if val:isMonster() then
+      if getDistanceBetween(player:getPosition(), val:getPosition()) <= closest then
+        if g_game.getAttackingCreature() ~= val and val:getHealthPercent() <= lowesthpc then
+          g_game.attack(val)
+          break
+        end
+      end
+    end
+  end
+end)
+local smartsTargets = addIcon("smarTgt", {item=16275, text="SMART TRGET"}, smartsTargets)
+ 
+ 
+fTrgt = addIcon("test", {item =16201, text = "Trget FOLOW"}, 
+macro(250, "", function()
+   if g_game.isOnline() and g_game.isAttacking() then
+         g_game.setChaseMode(1)
+           end
+           end) )
+ 
+ 
+local oldTarget = macro(400, "", nil, function()
+  if g_game.isAttacking() then
+    oldTarget = g_game.getAttackingCreature()
+  end
+  if (oldTarget and oldTarget:getPosition()) then
+    if (not g_game.isAttacking() and getDistanceBetween(pos(), oldTarget:getPosition()) <= 8) then
+      if (oldTarget:getPosition().z == posz()) then
+        g_game.attack(oldTarget)
+      end
+    end
+ end
+end)
+ 
+oldTarget = addIcon("oldTtarget", {item =2026, text = "Trget HOLD"}, oldTarget )
+
+local amulet = 3081
+local might = 3048
+local hpPercent = 80
+ 
+local ssaMightr = macro(190, "", function()
+ if hppercent() <= hpPercent then
+      if getNeck() == nil or getNeck():getId() ~= amulet then
+        g_game.equipItemId(amulet)
+end
+ 
+ if getFinger() == nil or getFinger():getId() ~= might then
+    g_game.equipItemId(might)
+    end
+  end
+end)
+ssaMightr = addIcon("mightssat", {item =9388, text = "SS --A MIGHT"}, ssaMightr)
+
+-- mais rápido do que os convencionais que usam onKeyPress()
+local function checkPos(x, y)
+ xyz = g_game.getLocalPlayer():getPosition()
+ xyz.x = xyz.x + x
+ xyz.y = xyz.y + y
+ tile = g_map.getTile(xyz)
+ if tile then
+  return g_game.use(tile:getTopUseThing())  
+ else
+  return false
+ end
+end
+
+
+local bugMap = macro(70, "", function() 
+ if modules.corelib.g_keyboard.isKeyPressed('w') then
+  checkPos(0, -5)
+ elseif modules.corelib.g_keyboard.isKeyPressed('e') then
+  checkPos(3, -3)
+ elseif modules.corelib.g_keyboard.isKeyPressed('d') then
+  checkPos(5, 0)
+ elseif modules.corelib.g_keyboard.isKeyPressed('c') then
+  checkPos(3, 3)
+ elseif modules.corelib.g_keyboard.isKeyPressed('s') then
+  checkPos(0, 5)
+ elseif modules.corelib.g_keyboard.isKeyPressed('z') then
+  checkPos(-3, 3)
+ elseif modules.corelib.g_keyboard.isKeyPressed('a') then
+  checkPos(-5, 0)
+ elseif modules.corelib.g_keyboard.isKeyPressed('q') then
+  checkPos(-3, -3)
+ end
+end)
+local bugMap = addIcon("bugMap", {item =37610, text = "DASH"}, bugMap )
+-----------------------------------------------
+setDefaultTab("Main")
+
+--[[
+  1. Start the script with your normal ring on 
+  2. make sure the backpack with e-rings
+     are always open
+]]
+-- By Josea
+setDefaultTab("Main")
+UI.Separator()
+function theinmortal()
+    local panelName = "theinmortal"
+    local UI = setupUI([[
+Panel
+  height: 173
+  margin-top: 2
+
+  Label
+    id: label1
+    text: -[ INMORTAL ]-
+    anchors.top: parent.top
+    anchors.left: parent.left
+    margin-left: 30
+    color: #599dff
+    text-align: center
+
+  Label
+    id: labelSSA
+    text: SSA when <= 50%:
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: label1.bottom
+    margin-top: 5
+    margin-left: 1
+    color: #77D390
+    text-align: center
+
+  HorizontalScrollBar
+    id: scrollSSA
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: labelSSA.bottom
+    margin-left: 5
+    margin-right: 5
+    margin-top: 5
+    minimum: 1
+    maximum: 100
+    step: 1
+
+  Label
+    id: labelMR
+    text: MIGHT RING when <= 50%:
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: scrollSSA.bottom
+    color: #77D390
+    margin-top: 5
+    text-align: center
+
+  HorizontalScrollBar
+    id: scrollMR
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: labelMR.bottom
+    margin-left: 5
+    margin-right: 5
+    margin-top: 5
+    minimum: 1
+    maximum: 100
+    step: 1
+
+  Label
+    id: labelUtamo
+    text: Utamo Ring when <= 50%:
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: scrollMR.bottom
+    color: #77D390
+    margin-top: 5
+    text-align: center
+
+  HorizontalScrollBar
+    id: scrollUtamo
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: labelUtamo.bottom
+    margin-left: 5
+    margin-right: 5
+    margin-top: 5
+    minimum: 1
+    maximum: 100
+    step: 1
+
+  BotSwitch
+    id: switchUtamo
+    anchors.top: scrollUtamo.top
+    anchors.right: parent.right
+    anchors.left: parent.left
+    margin-top: 20
+    text-align: center
+    text: Anillo Utamo
+
+  BotSwitch
+    id: switch
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    anchors.left: parent.left
+    text-align: center
+    width: 130
+    height: 25
+    !text: tr('Inmortal')
+
+
+
+]])
+    if not storage[panelName] then
+        storage[panelName] = {
+            ssaValue = 70,
+            mrValue = 70,
+            uRingValue = 30,
+            btnInmortal = false,
+            btnAnilloU = false
+        }
+    end
+
+    UI.switch:setOn(storage[panelName].btnInmortal)
+    UI.switch.onClick = function(widget)
+        storage[panelName].btnInmortal = not storage[panelName].btnInmortal
+        widget:setOn(storage[panelName].btnInmortal)
+    end
+
+    UI.switchUtamo:setOn(storage[panelName].btnAnilloU)
+    UI.switchUtamo.onClick = function(widget)
+        storage[panelName].btnAnilloU = not storage[panelName].btnAnilloU
+        widget:setOn(storage[panelName].btnAnilloU)
+    end
+
+    UI.labelSSA:setText("SSA ON <= " .. storage[panelName].ssaValue .. "%")
+
+    UI.scrollSSA:setValue(storage[panelName].ssaValue)
+    UI.scrollSSA.onValueChange = function(scroll, value)
+        storage[panelName].ssaValue = value
+        UI.labelSSA:setText("SSA ON <= " .. value .. "%")
+    end
+
+    UI.labelMR:setText("MIGHT RING ON <= " .. storage[panelName].mrValue .. "%")
+    UI.scrollMR:setValue(storage[panelName].mrValue)
+    UI.scrollMR.onValueChange = function(scroll, value)
+        storage[panelName].mrValue = value
+        UI.labelMR:setText("MIGHT RING ON <= " .. value .. "%")
+    end
+
+    UI.labelUtamo:setText("UTAMO RING ON <= " .. storage[panelName].uRingValue .. "%")
+    UI.scrollUtamo:setValue(storage[panelName].uRingValue)
+    UI.scrollUtamo.onValueChange = function(scroll, value)
+        storage[panelName].uRingValue = value
+        UI.labelUtamo:setText("UTAMO RING ON <= " .. value .. "%")
+    end
+
+    local amulet = 3081
+    local ring = 3048
+    local ering = 3051
+    local aering = 3088
+    local lastAction = now
+
+    function desequipar(value)
+        local item = Item.create(value)
+        g_game.equipItem(item)
+    end
+
+    -- basic ring check
+    function defaultRingFind()
+        if storage[panelName].ringEnabled then
+            if getFinger() and (getFinger():getId() ~= ring and getFinger():getId() ~= getActiveItemId(ring)) then
+                defaultRing = getInactiveItemId(getFinger():getId())
+            else
+                defaultRing = false
+            end
+        end
+    end
+
+    -- basic amulet check
+    function defaultAmmyFind()
+        if storage[panelName].ammyEnabled then
+            if getNeck() and (getNeck():getId() ~= amulet and getNeck():getId() ~= getActiveItemId(amulet)) then
+                defaultAmmy = getInactiveItemId(getNeck():getId())
+            else
+                defaultAmmy = false
+            end
+        end
+    end
+
+    macro(10, function()
+        if now - lastAction < math.max(math.max(g_game.getPing() * 2, 150), 300) then
+            return
+        end
+        if not storage[panelName].btnInmortal then
+            return
+        end
+
+        local eringEquipped = getFinger() and (getFinger():getId() == aering)
+        local ringEquipped = getFinger() and
+                                 (getFinger():getId() == ring or getFinger():getId() == getActiveItemId(ring))
+        local ssaEquipped = getNeck() and (getNeck():getId() == amulet or getNeck():getId() == getActiveItemId(amulet))
+
+        if eringEquipped then
+            -- SSA --
+            if not ssaEquipped and storage[panelName].btnAnilloU then
+                defaultAmmyFind()
+                if hppercent() <= storage[panelName].ssaValue then
+                    g_game.equipItemId(amulet)
+                    lastAction = now
+                    return
+                end
+            elseif ssaEquipped and hppercent() > storage[panelName].ssaValue then
+                desequipar(amulet)
+                lastAction = now
+                return
+            end
+        end
+
+        -- SI NO TIENE ACTIVADO EL BOTON DE E RING
+        if not storage[panelName].btnAnilloU then
+            if hasManaShield() then
+                -- MIGHT RING --
+                if not ringEquipped then
+                    defaultRingFind()
+                    if manapercent() <= storage[panelName].mrValue then
+                        g_game.equipItemId(ring)
+                        lastAction = now
+                        return
+                    end
+                elseif ringEquipped then
+                    if manapercent() > storage[panelName].mrValue then
+                        desequipar(ring)
+                        lastAction = now
+                        return
+                    end
+                end
+
+            elseif not hasManaShield() then
+                -- MIGHT RING --
+                if not ringEquipped then
+                    defaultRingFind()
+                    if hppercent() <= storage[panelName].mrValue then
+                        g_game.equipItemId(ring)
+                        lastAction = now
+                        return
+                    end
+                elseif ringEquipped then
+                    if hppercent() > storage[panelName].mrValue then
+                        desequipar(ring)
+                        lastAction = now
+                        return
+                    end
+                end
+            end
+
+        end
+        if storage[panelName].btnAnilloU then
+            -- MIGHT RING --
+            if not ringEquipped then
+                defaultRingFind()
+                if hppercent() <= storage[panelName].mrValue and hppercent() > storage[panelName].uRingValue then
+                    g_game.equipItemId(ring)
+                    lastAction = now
+                    return
+                elseif hppercent() <= storage[panelName].uRingValue or
+                    (getFinger() == nil and hppercent() <= storage[panelName].uRingValue) then
+                    g_game.equipItemId(ering)
+                    lastAction = now
+                    return
+                elseif eringEquipped and hppercent() > storage[panelName].uRingValue then
+                    desequipar(aering)
+                    lastAction = now
+                    return
+                end
+            elseif ringEquipped then
+                if hppercent() > storage[panelName].mrValue then
+                    desequipar(ring)
+                    lastAction = now
+                    return
+                end
+                if hppercent() <= storage[panelName].uRingValue then
+                    g_game.equipItemId(ering)
+                    lastAction = now
+                    return
+                end
+            end
+        end
+
+        if storage[panelName].btnAnilloU and storage[panelName].mrValue <= storage[panelName].uRingValue then
+            warn("NO PUEDES PONER MAS ALTO EL PORCENTAJE DEL ENERGY RING QUE EL DE MIGHT RING")
+            storage[panelName].uRingValue = storage[panelName].mrValue - 10
+            UI.scrollUtamo:setValue(storage[panelName].uRingValue)
+            UI.labelUtamo:setText("UTAMO RING ON <= " .. storage[panelName].uRingValue .. "%")
+            return
+        end
+        if hasManaShield() then
+            -- SSA --
+            if not ssaEquipped then
+                defaultAmmyFind()
+                if manapercent() <= storage[panelName].ssaValue then
+                    g_game.equipItemId(amulet)
+                    lastAction = now
+                    return
+                end
+            elseif ssaEquipped and manapercent() > storage[panelName].ssaValue then
+                desequipar(amulet)
+                lastAction = now
+                return
+            end
+        else
+            -- SSA --
+            if not ssaEquipped then
+                defaultAmmyFind()
+                if hppercent() <= storage[panelName].ssaValue then
+                    g_game.equipItemId(amulet)
+                    lastAction = now
+                    return
+                end
+            elseif ssaEquipped and hppercent() > storage[panelName].ssaValue then
+                desequipar(amulet)
+                lastAction = now
+                return
+            end
+        end
+
+        
+    end)
+end -- END FUNCTION theinmortal
+
+if g_game.getClientVersion() >= 1000 then
+    theinmortal()
+    
+end
+
+setDefaultTab("Main")
+UI.Separator()
+UI.Label("PANEL ANTIPUSH")
+addSeparator()
+  local panelName = "castle"
+  local ui = setupUI([[
+Panel
+  height: 40
+
+  BotItem
+    id: item
+    anchors.top: parent.top
+    anchors.left: parent.left
+    margin-top: 2
+    
+  BotSwitch
+    id: skip
+    anchors.top: parent.top
+    anchors.left: item.right
+    anchors.right: parent.right
+    anchors.bottom: item.verticalCenter
+    text-align: center
+    !text: tr('Skip Tiles Near Target')
+    margin-left: 2
+
+  BotSwitch
+    id: title
+    anchors.top: item.verticalCenter
+    anchors.left: item.right
+    anchors.right: parent.right
+    anchors.bottom: item.bottom
+    text-align: center
+    !text: tr('Drop Items Around')
+    margin-left: 2
+      
+  ]], parent)
+  ui:setId(panelName)
+
+  if not storage[panelName] then
+    storage[panelName] = {
+        id = 2983,
+        around = false,
+        enabled = false
+    }
+  end
+
+  ui.skip:setOn(storage[panelName].around)
+  ui.skip.onClick = function(widget)
+    storage[panelName].around = not storage[panelName].around
+    widget:setOn(storage[panelName].around)
+  end
+  ui.title:setOn(storage[panelName].enabled)
+  ui.title.onClick = function(widget)
+    storage[panelName].enabled = not storage[panelName].enabled
+    widget:setOn(storage[panelName].enabled)
+  end
+
+  ui.item:setItemId(storage[panelName].id)
+  ui.item.onItemChange = function(widget)
+    storage[panelName].id = widget:getItemId()
+  end
+
+
+macro(235, function() 
+    if storage[panelName].enabled then
+        local blockItem = findItem(storage[panelName].id)
+        for _, tile in pairs(g_map.getTiles(posz())) do
+            if distanceFromPlayer(tile:getPosition()) == 1 and tile:isWalkable() and tile:getTopUseThing():getId() ~= storage[panelName].id and (not storage[panelName].around or not target() or (target() and getDistanceBetween(targetPos(), tile:getPosition() > 1))) then
+                g_game.move(blockItem, tile:getPosition())
+                return
+            end
+        end
+        storage[panelName].enabled = false
+        ui.title:setOn(storage[panelName].enabled)
+    end
+end)
+addSeparator()
+
+config = {
+    itemsToPickUp = {2981, 2983, 2984, 2985, 2988},
+    rangeToCheck = 1
+}
+ 
+itemQueue = {} 
+ 
+pckFlow = macro(300, "AGARRAR FLORES", function(self)
+    for dx = -config.rangeToCheck, config.rangeToCheck do
+        for dy = -config.rangeToCheck, config.rangeToCheck do
+            local currentTile = g_map.getTile({x = posx() + dx, y = posy() + dy, z = posz()})
+            if currentTile then
+                local itemsOnTile = currentTile:getThings()
+                for _, item in pairs(itemsOnTile) do
+                    if table.find(config.itemsToPickUp, item:getId()) then
+                        table.insert(itemQueue, item)
+                    end
+                end
+            end
+        end
+    end
+ 
+    while #itemQueue > 0 do
+        local item = table.remove(itemQueue, 1)
+        local containers = getContainers()
+        for _, container in pairs(containers) do
+            g_game.move(item, container:getSlotPosition(container:getItemsCount()), item:getCount())
+        end
+    end
+self.setOn(false)
+end)
+pckFlow.switch:setColor("#77D390")
+  
+
+
+-----------------
+UI.Separator()
+UI.Label("-[ PARTY SCRIPTS]-"):setColor("#599dff")
+UI.Separator()
+-----------------
+local infoTime = 0
+local talkTime = 0
+local maxLevel = 0
+local minLevel = 0
+local justForInfo = true
+local canSeeInfo = true
+local partyMembersCount = 0
+
+local partyLeaderHuntWidget = macro(1000, "Party Leader Hunt", function()
+  if not player:isPartyLeader() then
+    justForInfo = true
+    partyMembersCount = 0
+    return
+  end
+  if justForInfo and canSeeInfo then
+    sayChannel(getChannelId("party"), "!party info")
+    return
+  end
+  if talkTime > 0 then
+    talkTime = talkTime - 1
+  end
+  if player:getShield() == 10 then
+    infoTime = infoTime + 1
+    if infoTime >= 20 then
+      sayChannel(getChannelId("party"), "!party info")
+      infoTime = 0
+    end
+  else
+    infoTime = 0
+  end
+end)
+
+addLabel("maxLevel", "Max Level:")
+addTextEdit("maxLevel", storage.maxLevel or "", function(widget, text)
+  if tonumber(text) then
+    maxLevel = tonumber(text)
+  else
+    sayChannel(getChannelId("party"), "!party info")
+  end
+  storage.maxLevel = tonumber(text)
+end)
+
+addLabel("minLevel", "Min Level:")
+addTextEdit("minLevel", storage.minLevel or "", function(widget, text)
+  if tonumber(text) then
+    minLevel = tonumber(text)
+  else
+    sayChannel(getChannelId("party"), "!party info")
+  end
+  storage.minLevel = tonumber(text)
+end)
+
+onTalk(function(name, level, mode, text, channelId, pos)
+  if partyLeaderHuntWidget:isOn() then
+    if name == player:getName() then return end
+    if text:lower():find("pt") or (text:lower():find("party") and not text:lower():find("!party")) then
+      for _, spec in ipairs(getSpectators()) do
+        if spec:getName() == name then
+          if spec:isPartyMember() then return end
+          if spec:getShield() == 2 then
+            return
+          end
+          if level > maxLevel or level < minLevel then
+            return
+          end
+          if partyMembersCount >= 30 then
+            return
+          end
+          g_game.partyInvite(spec:getId())
+        end
+      end
+    end
+  end
+end)
+
+onLoginAdvice(function(text)
+  if partyLeaderHuntWidget:isOn() then
+    local explode1 = string.explode(text, "*")
+    local explode2 = string.explode(explode1[8], ":")[2]
+    if not storage.maxLevel then
+      maxLevel = math.ceil(tonumber(string.explode(explode1[4], ":")[2])*3/2)
+    else
+      maxLevel = storage.maxLevel
+    end
+    if not storage.minLevel then
+      minLevel = math.ceil(tonumber(string.explode(explode1[3], ":")[2])*2/3)
+    else
+      minLevel = storage.minLevel
+    end
+    partyMembersCount = tonumber(string.explode(explode1[2], ":")[2])
+    if justForInfo then
+      justForInfo = false
+      return
+    end
+    if explode2:find(",") then
+      local names = string.explode(explode2, ",")
+      for i = 1, #names do
+        canSeeInfo = false
+        schedule(1000 * i, function()
+          if i == #names then
+            canSeeInfo = true
+          end
+          sayChannel(getChannelId("party"), "!party kick," .. names[i])
+        end)
+      end
+    elseif explode2 ~= "" then
+      schedule(1000, function() sayChannel(getChannelId("party"), "!party kick," .. explode2) end)
+    end
+  end
+end)
+
+onCreatureAppear(function(creature)
+  if partyLeaderHuntWidget:isOn() then
+    if not creature:isPlayer() then return end
+    if creature:isLocalPlayer() then return end
+    if creature:getShield() == 2 then return end
+    if creature:isPartyMember() then return end
+    if talkTime == 0 and partyMembersCount < 30 then
+      say("If you want to join the party, say 'pt' so I can invite you")
+      talkTime = 15
+    end
+  end
+end)
+
+onTextMessage(function(mode, text)
+  if partyLeaderHuntWidget:isOn() then
+    if text:lower():find("you are now the leader of the party.") or text:lower():find("has joined the party.") or (text:lower():find("has left the party.") and canSeeInfo) then
+      justForInfo = true
+    end
+  end
+end)
+
+UI.Separator()
+local autoParty = macro(10000, "Auto Dar Party", function() end)
+onTalk(function(name, level, mode, text, channelId, pos)
+    if autoParty:isOff() then return end
+    if player:getShield() == 4 then 
+        g_game.partyShareExperience(not player:isPartySharedExperienceActive())
+    end
+    if name == player:getName() then return end
+    if mode ~= 1 then  return end
+    if string.find(string.lower(text), string.lower(storage.localpt)) then
+        local friend = getPlayerByName(name)
+        g_game.partyInvite(friend:getId())
+    end
+end)
+
+UI.TextEdit(storage.localpt or "Get PT", function(widget, text)
+    storage.localpt = text
+end)
+
+UI.Separator()
+macro(1000,"Auto Aceptar Party",function() 
+  if player:getShield() > 2 then return end -- already in a party
+  for s, spec in pairs(getSpectators(false)) do
+    if spec:getShield() == 1 then
+      g_game.partyJoin(spec:getId())
+      delay(1000)
+    end
+  end
+end)
+
+---------------------------------
+
+setDefaultTab("tools")
+
+UI.Label("--- Anti Red Skull ---")
+UI.Separator()
+--- Cuando tengas 3 frags se saldra del juego.
+
+local fExit = macro(200, "FORCE EXIT -Anti RS", function()
+  if player:getSkull() == 3 then
+    modules.game_interface.forceExit()
+    delay(1000)
+  end
+end)
+fExit.switch:setColor("red")
+---- Ignore Player.
+
+local detectRange = 8
+local time = 200
+kGoingb = macro(100, "KEEP GOING - Anti RS", function()
+    if getPlayers(detectRange) ~= 0 then
+        TargetBot.delay(time)
+        return
+    end
+end)
+kGoingb.switch:setColor("yellow")
+
+UI.Separator()
+--- Exori y Exori gran mientras no halla nadie en 5 sqm cerca de mi, y en caso de haberlos Exori hur y Exori Ico
+
+local distance = 5
+Exoris = macro(200, "EXORIs - AntiRS",  function()
+    local playerInScreen = false
+    if not g_game.isAttacking() then
+        return
+    end
+    for i,mob in ipairs(getSpectators()) do
+        if (getDistanceBetween(player:getPosition(), mob:getPosition())  <= distance and mob:isPlayer())  and (player:getName() ~= mob:getName()) then
+            playerInScreen = true
+        end
+    end
+
+    if not playerInScreen then 
+      say("exori gran")
+      delay(1000)
+      say("exori")
+      delay(1000)
+      end
+    if g_game.isAttacking() then
+       saySpell('Exori hur', 4100)
+       saySpell('Exori Ico', 2000)
+ end
+end)
+Exoris.switch:setColor("green")
+
+UI.Separator()
+UI.Label("--- Attack Spells ---")
+UI.Separator()
+
+--- exori hur
+
+local Spells = {
+    {name = "", cast = false, range = 2, buffSpell = false, manaCost = 20, level = 20},
+    {name = "exori hur", cast = true, range = 5, manaCost = 40, level = 28},
+}
+
+Hur = macro(700, "EXORI HUR", function()
+    if not g_game.isAttacking() then return end
+    local target = g_game.getAttackingCreature()
+    local distance = getDistanceBetween(player:getPosition(), target:getPosition())
+    for _, spell in ipairs(Spells) do
+        if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
+            if not hasPartyBuff() or not spell.buffSpell then
+                say(spell.name)
+                delay(2000) -- Agregado delay de 2 segundos
+            end
+        end
+    end
+end)
+
+---- Exori gran ico
+
+local Spells = {
+    {name = "", cast = false, range = 2, buffSpell = false, manaCost = 20, level = 20},
+    {name = "exori gran ico", cast = true, range = 1, manaCost = 300, level = 110},
+}
+
+-- script
+Hur = macro(350, "EXORI GRAN ICO", function()
+    if not g_game.isAttacking() then return end
+    local target = g_game.getAttackingCreature()
+    local distance = getDistanceBetween(player:getPosition(), target:getPosition())
+    for _, spell in ipairs(Spells) do
+        if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
+            if not hasPartyBuff() or not spell.buffSpell then
+                say(spell.name)
+                delay(15050) -- Agregado delay de 2 segundos
+            end
+        end
+    end
+end)
+
+
+UI.Separator()
+UI.Label("--- Buff Spells ---"):setColor("white")
+UI.Separator()
+------------
+macro(5500, "UTITO TEMPO", function()
+  if not hasPartyBuff() then
+    say("Utito Tempo")
+  end
+end)
+
+-----------
+macro(5500, "UTAMO TEMPO", function()
+if not hasPartyBuff() then
+  say("utamo tempo")
+end
+end)
+
+UI.Separator()
+UI.Label("--- Support Spells ---"):setColor("white")
+UI.Separator()
+
+macro(1313, "SPELL - Delay",  function()
+  say(storage.ExetaText)
+  delay(tonumber(storage.delaysayx))
+end)
+UI.Label("Magia")
+addTextEdit("ExetaText", storage.ExetaText or "Exeta res", function(widget, text) 
+storage.ExetaText = text
+end)
+
+UI.Label("Tiempo")
+UI.TextEdit(storage.delaysayx or "1000", function(widget, text)
+storage.delaysayx = text
+end)
+
+--- exeta amp res
+
+UI.Separator()
+test = addIcon("test", {item =5553, text = "test", hotkey = "F5"},
+macro(250, "EXETA AMP RES - 3s", function()
+    say("exeta amp res")
+    delay(3030)
+end) )
+
+--- exeta loot
+
+local timer = 2222
+local text = "Exeta Loot"
+macro(timer, "EXETA LOOT", function()
+    say(text)
+end)
+
+UI.Separator()
+local widgets = {}
+local colors = {"#00bfff", "#0099cc", "#0077b3"}
+local colorIndex = 1
+
+local function nextColor()
+  colorIndex = colorIndex + 1
+  if colorIndex > #colors then
+    colorIndex = 1
+  end
+end
+
+macro(500, function()
+  local currentColor = colors[colorIndex]
+  for _, widget in ipairs(widgets) do
+    widget:setColor(currentColor)
+  end
+  nextColor()
+end)
+
+function rainbowColor(widget)
+  table.insert(widgets, widget)
+end
+
+--Example
+local labelExample = addLabel("", "RUNAS")
+rainbowColor(labelExample)
+
+local Avva = macro(200, "Avalanche", function()
+    if g_game.isAttacking() then
+        usewith(3161, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+Avva = addIcon("uEVVAa", {item= 3161, text="AVVAA"}, Avva)
+
+macro(200, "FireBall Bomb", function()
+    if g_game.isAttacking() then
+        usewith(3191, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+
+macro(200, "Explosion", function()
+    if g_game.isAttacking() then
+        usewith(3200, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+
+macro(200, "Thunderstorm", function()
+    if g_game.isAttacking() then
+        usewith(3202, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+
+macro(200, "Stone Shower", function()
+    if g_game.isAttacking() then
+        usewith(3175, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+
+UI.Separator()
+local widgets = {}
+local colors = {"#00bfff", "#0099cc", "#0077b3"}
+local colorIndex = 1
+
+local function nextColor()
+  colorIndex = colorIndex + 1
+  if colorIndex > #colors then
+    colorIndex = 1
+  end
+end
+
+macro(500, function()
+  local currentColor = colors[colorIndex]
+  for _, widget in ipairs(widgets) do
+    widget:setColor(currentColor)
+  end
+  nextColor()
+end)
+
+function rainbowColor(widget)
+  table.insert(widgets, widget)
+end
+
+--Example
+local labelExample = addLabel("", "RUNE BOMBS ATTACK")
+rainbowColor(labelExample)
+UI.Separator()
+
+macro(200, "FIRE BOMB", function()
+    if g_game.isAttacking() then
+        usewith(3192, g_game.getAttackingCreature())
+        delay(400)
+    end
+end)
+
+macro(200, "ENERGY BOMB", function()
+    if g_game.isAttacking() then
+        usewith(3149, g_game.getAttackingCreature())
+        delay(400)
+    end
+end)
+
+macro(200, "POISONBOMB", function()
+    if g_game.isAttacking() then
+        usewith(3173, g_game.getAttackingCreature())
+        delay(400)
+    end
+end)
+
+UI.Separator()
+
+local bombs = { 3192 } -- IDs das bombas
+local fireId = { 2118, 2122, 105, 2123, 2124, 2121, 2126, 2119 } -- ID do fogo
+local flowerId = { 2981, 2983, 2984, 2985 } -- ID da flor
+local destroy = 3148
+
+local myMacro = addIcon("bomb", { item = { id = 2118 }, movable = true, text = "FIRE"}, macro(50, "", function()
+
+  local main_delay = g_game.getPing() / 2
+  local playerPos = player:getPosition() -- Posição do personagem
+  local tilesAround = getNearTiles(playerPos) -- Tiles ao redor do personagem
+
+  if isInPz() then return end -- Checa se está no pz e retorna
+
+  for _, bombId in ipairs(bombs) do
+  
+    local bomb = findItem(bombId)
+
+    if bomb then
+      for i = 1, #tilesAround do
+        local tile_around = tilesAround[i]
+
+        if tile_around:getTopUseThing() and not table.find(fireId, tile_around:getTopUseThing():getId()) and not table.find(flowerId, tile_around:getTopUseThing():getId()) and tile_around:isWalkable() then
+          useWith(bomb, player)
+          return
+        end
+      end
+    end
+  end
+end))
+
+UI.Separator()
+
+
+UI.Separator()
+
+setDefaultTab("hp")
+UI.Separator()
+UI.Label("- HEAL DIRECT -")
+
+
+local healingSpell = 'Exura Med Ico'
+local hpPercent = 95
+macro(50, "FAST HEAL 95% - EK",  function()
+  if (hppercent() <= hpPercent) then
+    say(healingSpell) 
+  end
+end)
+ 
+local healthId = 23375
+local healthPercent = 90
+macro(200, "FAST SUPREME 90% - EK",  function()
+  if (hppercent() <= healthPercent) then
+    usewith(healthId, player) 
+  end
+end)
+ 
+local manaId = 237
+local manaPercent = 50
+macro(200, "FAST MANA 50% - EK",  function()
+  if (manapercent() <= manaPercent) then
+    usewith(manaId, player) 
+  end
+end)
+
+UI.Separator()
+UI.Label("- HEAL SPELLS -")
+UI.Separator()
+
+
+if type(storage.healing1) ~= "table" then
+  storage.healing1 = {on=false, title="HP%", text="exura", min=51, max=90}
+end
+if type(storage.healing2) ~= "table" then
+  storage.healing2 = {on=false, title="HP%", text="exura vita", min=0, max=50}
+end
+
+-- create 2 healing widgets
+for _, healingInfo in ipairs({storage.healing1, storage.healing2}) do
+  local healingmacro = macro(20, function()
+    local hp = player:getHealthPercent()
+    if healingInfo.max >= hp and hp >= healingInfo.min then
+      if TargetBot then 
+        TargetBot.saySpell(healingInfo.text) -- sync spell with targetbot if available
+      else
+        say(healingInfo.text)
+      end
+    end
+  end)
+  healingmacro.setOn(healingInfo.on)
+
+  UI.DualScrollPanel(healingInfo, function(widget, newParams) 
+    healingInfo = newParams
+    healingmacro.setOn(healingInfo.on)
+  end)
+end
+
+
+UI.Separator()
+UI.Label(" - HP & MP - potions/runes")
+UI.Separator()
+
+if type(storage.hpitem1) ~= "table" then
+  storage.hpitem1 = {on=false, title="HP%", item=266, min=51, max=90}
+end
+if type(storage.hpitem2) ~= "table" then
+  storage.hpitem2 = {on=false, title="HP%", item=3160, min=0, max=50}
+end
+if type(storage.manaitem1) ~= "table" then
+  storage.manaitem1 = {on=false, title="MP%", item=268, min=51, max=90}
+end
+if type(storage.manaitem2) ~= "table" then
+  storage.manaitem2 = {on=false, title="MP%", item=3157, min=0, max=50}
+end
+
+for i, healingInfo in ipairs({storage.hpitem1, storage.hpitem2, storage.manaitem1, storage.manaitem2}) do
+  local healingmacro = macro(20, function()
+    local hp = i <= 2 and player:getHealthPercent() or math.min(100, math.floor(100 * (player:getMana() / player:getMaxMana())))
+    if healingInfo.max >= hp and hp >= healingInfo.min then
+      if TargetBot then 
+        TargetBot.useItem(healingInfo.item, healingInfo.subType, player) -- sync spell with targetbot if available
+      else
+        local thing = g_things.getThingType(healingInfo.item)
+        local subType = g_game.getClientVersion() >= 860 and 0 or 1
+        if thing and thing:isFluidContainer() then
+          subType = healingInfo.subType
+        end
+        g_game.useInventoryItemWith(healingInfo.item, player, subType)
+      end
+    end
+  end)
+  healingmacro.setOn(healingInfo.on)
+
+  UI.DualScrollItemPanel(healingInfo, function(widget, newParams) 
+    healingInfo = newParams
+    healingmacro.setOn(healingInfo.on and healingInfo.item > 100)
+  end)
+end
+
+if g_game.getClientVersion() < 780 then
+  UI.Label("In old tibia potions & runes work only when you have backpack with them opened")
+end
+
+UI.Separator()
+
+
+--------------
+
+UI.Separator()
+
+setDefaultTab("ADD")
+
+PvpAttackLeader = {}
+local toAttack = nil
+onMissle(function(missle)
+    if not storage.attackLeader or storage.attackLeader:len() == 0 then
+        return
+    end
+    local src = missle:getSource()
+    if src.z ~= posz() then return end
+    local from = g_map.getTile(src)
+    local to = g_map.getTile(missle:getDestination())
+    if not from or not to then return end
+    local fromCreatures = from:getCreatures()
+    local toCreatures = to:getCreatures()
+    if #fromCreatures ~= 1 or #toCreatures ~= 1 then return end
+    local c1 = fromCreatures[1]
+    if c1:getName():lower() == storage.attackLeader:lower() then
+        toAttack = toCreatures[1]
+    end
+end)
+
+PvpAttackLeader.Macro = macro(50, "ATACK LIDER TARGET ", function()
+    if toAttack and storage.attackLeader:len() > 0 and toAttack ~=
+        g_game.getAttackingCreature() then
+        g_game.attack(toAttack)
+        toAttack = nil
+    end
+end)
+
+PvpAttackLeader.editAttackLeader = UI.TextEdit(
+                                       storage.attackLeader or "player name",
+                                       function(widget, newText)
+        storage.attackLeader = newText
+    end)
+
+PvpAttackLeader.setLeader = (function(leader)
+    storage.attackLeader = leader
+    PvpAttackLeader.editAttackLeader:setText(leader)
+end)
+
+PvpAttackLeader.setEnabled = (function(enabled)
+    if enabled then
+        PvpAttackLeader.Macro:setOn();
+    else
+        PvpAttackLeader.Macro:setOff();
+    end
+end)
+
+UI.Separator()
+UI.Label("COMBO SPELL / UE"):setColor("green")
+
+local comboOptions = {
+  leader = storage.gpSpellComboLeader or "",
+  trigger = storage.gpSpellComboTrigger or "",
+  spell = storage.gpSpellComboSpell or "exevo gran mas vis",
+}
+
+addLabel("leaderLabel", "Leader Player Name: ", comboTab)
+addTextEdit("leaderValue", comboOptions.leader, function(widget, text)
+  comboOptions.leader = text
+  storage.gpSpellComboLeader = text
+end, comboTab)
+
+addLabel("triggerLabel", "Palabra Clave: ", comboTab)
+addTextEdit("triggerValue", comboOptions.trigger, function(widget, text)
+  comboOptions.trigger = text
+  storage.gpSpellComboTrigger = text
+end, comboTab)
+
+addLabel("spellLabel", "Spell Combo:", comboTab)
+addTextEdit("spellValue", comboOptions.spell, function(widget, text)
+  comboOptions.spell = text
+  storage.gpSpellComboSpell = text
+end, comboTab)
+
+onTalk(function(name, level, mode, text, channelId, pos)
+  if not comboOptions.trigger then
+    return
+  end
+
+  if name and name:lower() == comboOptions.leader:lower() then
+    if text == comboOptions.trigger then
+      say(comboOptions.spell)
+    end
+  end
+end)
+    
+UI.Separator()
+UI.Label("AUTOFOLLOWS"):setColor("green")
+UI.Separator()
+
+storage.followLeader = storage.followLeader or "Quentin"
+FollowMacro = macro(1231321321, "Follow: ExaniTera", function() end)
+addTextEdit("playerToFollow", storage.followLeader, function(widget, text) 
+    storage.followLeader = text 
+end)
+
+onCreaturePositionChange(function(creature, newPos, oldPos)
+    if FollowMacro:isOff() then return end
+    if newPos and oldPos and creature:getName() == player:getName() and getCreatureByName(storage.followLeader) == nil and newPos.z > oldPos.z then
+        say('exani tera')
+        for i = -1, 1 do
+            for j = -1, 1 do
+                local useTile = g_map.getTile({ x = posx() + i, y = posy() + j, z = posz() })
+                if useTile ~= nil then  -- Verifica que useTile no sea nil
+                    g_game.use(useTile:getTopUseThing())
+                end
+            end
+        end
+    end
+
+    if creature:getName() == storage.followLeader then
+        if not newPos then
+            if oldPos then
+                lastPos = oldPos
+                schedule(200, function() autoWalk(oldPos) end)
+            end
+            schedule(1000, function() 
+                for i = -1, 1 do
+                    for j = -1, 1 do
+                        local useTile = g_map.getTile({ x = posx() + i, y = posy() + j, z = posz() })
+                        if useTile ~= nil then  -- Verifica que useTile no sea nil
+                            local top = useTile:getTopUseThing()
+                            if top then
+                                g_game.use(top)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+
+        if not newPos or not oldPos then return end
+        if oldPos.z == newPos.z then
+            schedule(300, function() 
+                local useTile = g_map.getTile({ x = oldPos.x, y = oldPos.y, z = oldPos.z })
+                if useTile ~= nil then  -- Verifica que useTile no sea nil
+                    local topThing = useTile:getTopThing()
+                    if not useTile:isWalkable() then
+                        g_game.use(topThing)
+                    end
+                end
+            end)
+            autoWalk({ x = oldPos.x, y = oldPos.y, z = oldPos.z })
+        else
+            lastPos = oldPos
+            autoWalk(oldPos)
+            for i = 1, 6 do
+                schedule(i * 200, function() 
+                    autoWalk(oldPos)
+                    if getDistanceBetween(pos(), oldPos) == 0 and (posz() > newPos.z and getCreatureByName(storage.followLeader) == nil) then
+                        say('exani tera')
+                    end
+                end)
+            end
+            local useTile = g_map.getTile({ x = newPos.x, y = newPos.y - 1, z = oldPos.z })
+            if useTile ~= nil then  -- Verifica que useTile no sea nil
+                g_game.use(useTile:getTopUseThing())
+            end
+        end
+    end
+end)
+
+
+--
+
+local MinDistance = 1 -- minimalny dystans
+local MaxDistance = 1 -- maksymalny dystans
+
+followName = "autofollow"
+if not storage[followName] then storage[followName] = { player = 'name'} end
+
+UI.Separator()
+
+local toFollowPos = {}
+
+local followChange = macro(200, "Follow Change", function() end)
+
+local followMacro = macro(20, "Follow: DelayWalk", function()
+    local target = getCreatureByName(storage[followName].player)
+    if target then
+        local tpos = target:getPosition()
+        toFollowPos[tpos.z] = tpos
+    end
+    if player:isWalking() then
+        return
+    end
+    local p = toFollowPos[posz()]
+    if not p then
+        return
+    end
+
+    if target then
+      autoWalk(p, 20, {ignoreNonPathable=true, precision=0, marginMin=MinDistance, marginMax=MaxDistance})
+    delay(tonumber(storage.delayf))
+  end
+end)
+UI.Separator()
+onPlayerPositionChange(function(newPos, oldPos)
+  if followChange:isOff() then return end
+  if (g_game.isFollowing()) then
+    tfollow = g_game.getFollowingCreature()
+
+    if tfollow then
+      if tfollow:getName() ~= storage[followName].player then
+        followTE:setText(tfollow:getName())
+        storage[followName].player = tfollow:getName()
+      end
+    end
+  end
+end)
+
+onCreaturePositionChange(function(creature, newPos, oldPos)
+  if creature:getName() == storage[followName].player and newPos then
+    toFollowPos[newPos.z] = newPos
+  end
+end)
+followTE = UI.TextEdit(storage[followName].player or "name", function(widget, newText)
+  storage[followName].player = newText
+end)
+
+UI.Label("Walk Delay")
+
+UI.TextEdit(storage.delayf or "100", function(widget, newText)
+  storage.delayf = newText
+end)
+
+----------- MWALLS
+
+local key = ""
+local mwallId = 3180
+local squaresThreshold = 2
+local mwaft = macro(200, "", function()
+local target = g_game.getAttackingCreature()
+      if target then
+local targetPos = target:getPosition()
+local targetDir = target:getDirection()
+local mwallTile
+      if targetDir == 0 then -- north
+        targetPos.y = targetPos.y - squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      elseif targetDir == 1 then -- east
+        targetPos.x = targetPos.x + squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      elseif targetDir == 2 then -- south
+        targetPos.y = targetPos.y + squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      elseif targetDir == 3 then -- west
+        targetPos.x = targetPos.x - squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      end
+   end
+end)
+
+local mwaft = addIcon("Control+F12", {item=3180, text="FRENTE ENEMY"}, function(icon, isOn)
+mwaft.setOn(isOn)
+end)
+
+
+local mwBack = macro(10, "",function() end) -- taca mw no sqm anterior
+
+onPlayerPositionChange(function(newPos, oldPos)
+    if oldPos.z ~= posz() then return end
+    if oldPos then
+        local tile = g_map.getTile(oldPos)
+        if mwBack.isOn() and tile:isWalkable() then
+            useWith(3180, tile:getTopUseThing())
+            mwBack.setOff()
+        end
+    end
+end)
+
+local mwBack = addIcon("mwBack", {item=3180, text="ATRAS MIO "},  mwBack )
+
+
+local toggle2 = macro(10, "", function() end)
+
+onCreaturePositionChange(function(creature, newPos, oldPos)
+    if creature == target() or creature == g_game.getFollowingCreature() then
+        if oldPos and oldPos.z == posz() then
+            local tile2 = g_map.getTile(oldPos)
+            if toggle2.isOn() and tile2:isWalkable() then
+                useWith(3180, tile2:getTopUseThing())
+                toggle2.setOff()
+            end 
+        end
+    end
+end)
+
+toggle = addIcon("toggle2", {item=3180, text="ATRAS ENEMY"}, toggle2)
+
+
+
+---------- OTHERS
+
+local gamePanel = modules.game_interface.gameMapPanel
+
+gamePanel.onMouseWheel = function(widget, mousePos, scroll)
+  if scroll == 1 then --scroll up
+    say("exani hur up")
+  elseif scroll == 2 then --scroll down
+    say("exani hur down")
+  end
+end
+
+---
+
+local panel = g_ui.getRootWidget():recursiveGetChildById('gameMapPanel')
+macro(100, function()
+    for i, child in ipairs(panel:getChildren()) do
+        if child:getStyleName() == "BotIcon" then
+            if child.text:getColor().r == 255 then
+                child.text:setColor("white")
+            end
+        end
+    end
+end)
+
+-----
+
+warning = function() 
+    --Made
+    --This will remove lots of others warning messages too, be warned ;P
+    return  
+end
+
+------
+
+local target
+ onAttackingCreatureChange(function(creature, oldCreature)
+  if creature then
+    target = creature
+  end
+end)
+
+local lex = addIcon("lex", {item =1982, text = "LAST EXIVA"}, function()
+  if not target then return end
+  say('exiva "' .. target:getName())
+end)
+
+-------
+
+setDefaultTab("+")
+
+
+UI.Separator()
+ local widgets = {}
+local colors = {"red", "orange", "yellow", "green", "blue", "#00008b", "#ee82ee"}
+local colorIndex = 1
+
+local function nextColor()
+  colorIndex = colorIndex + 1
+  if colorIndex > #colors then
+    colorIndex = 1
+  end
+end
+
+macro(700, function()
+  local currentColor = colors[colorIndex]
+  for _, widget in ipairs(widgets) do
+    widget:setColor(currentColor)
+  end
+  nextColor()
+end)
+
+function rainbowColor(widget)
+  table.insert(widgets, widget)
+end
+
+--Example
+local labelExample = addLabel("", "OTROS")
+rainbowColor(labelExample)
+UI.Separator()
+
+-----------
+local talkToOberon = macro(100, 'Oberon', function() end)
+
+  onTalk(function(name, level, mode, text, channelId, pos)
+    if talkToOberon.isOff() then return end
+    if mode == 34 then
+        if string.find(text, "world will suffer for") then
+            say("Are you ever going to fight or do you prefer talking!")
+        elseif string.find(text, "feet when they see me") then
+            say("Even before they smell your breath?")
+        elseif string.find(text, "from this plane") then
+            say("Too bad you barely exist at all!") 
+        elseif string.find(text, "ESDO LO") then
+            say("SEHWO ASIMO, TOLIDO ESD!") 
+        elseif string.find(text, "will soon rule this world") then
+            say("Excuse me but I still do not get the message!") 
+        elseif string.find(text, "honourable and formidable") then
+            say("Then why are we fighting alone right now?") 
+        elseif string.find(text, "appear like a worm") then
+            say("How appropriate, you look like something worms already got the better of!") 
+        elseif string.find(text, "will be the end of mortal") then
+            say("Then let me show you the concept of mortality before it!") 
+        elseif string.find(text, "The true virtue of chivalry are my belief!") then
+            say("Dare strike up a Minnesang and you will receive your last accolade!") 
+        end
+    end
+  end)
+
+UI.Separator()
+
+--[[Esconder Magias Laranjas da tela]]--
+TH = macro(1500, "esconder msg naranja", function() end)
+onStaticText(function(thing, text)
+    if TH.isOff() then return end
+    if not text:find('says:') then
+        g_map.cleanTexts()
+    end
+end)
+
+--[[esconder MAGIAS(SPRITES)]]--
+sprh = macro(1300, "esconder sprite", function() end)
+onAddThing(function(tile, thing)
+    if sprh.isOff() then return end
+    if thing:isEffect() then
+        thing:hide()
+    end
+end)
+
+UI.Separator()
+local function assertCondition(creature, condition)
+    local  conditionsTable = {
+        ["Player"] = creature:isPlayer(),
+        ["NPC"] = creature:isNpc(),
+        ["Monster"] = creature:isMonster(),
+        ["All"] = true
+    }
+    return conditionsTable[condition]
+end
+
+local conditions = {"Player", "NPC", "Monster", "All"}
+for _, condition in ipairs(conditions) do
+    addButton("","Hide "..condition, function()
+        for _, s in ipairs(getSpectators(posz())) do
+            if s and assertCondition(s,condition) then
+                s:hide()
+            end
+        end
+    end)
+    
+    addButton("","Show "..condition, function()
+        for _, s in ipairs(getSpectators(posz())) do
+            if s and assertCondition(s,condition) then
+                s:show()
+            end
+        end
+    end)
+    if _ ~= #conditions then
+        addSeparator()
+    end
+end
+
+UI.Separator()
+UI.Label("VORTEX"):setColor("green")
+UI.Separator()
+UI.Label("Items")
+
+-- Verifica si storage.pickUp no es una tabla, si no lo es, asigna una tabla con valores predeterminados
+if type(storage.pickUp) ~= "table" then
+  storage.pickUp = {3725, 3723}
+end
+
+-- Verifica si storage.containerpickUp no es una tabla, si no lo es, asigna una tabla con valores predeterminados
+if type(storage.containerpickUp) ~= "table" then
+  storage.containerpickUp = {5926}
+end
+
+-- Crea un contenedor para los items a recolectar
+local pickUpContainer = UI.Container(function(widget, items)
+  storage.pickUp = items
+end, true)
+pickUpContainer:setHeight(54)
+pickUpContainer:setItems(storage.pickUp)
+
+-- Cantidad de SQM alrededor del personaje que va a chequear
+local CheckPOS = 8
+
+UI.Label("Backpack ")
+
+-- Crea un contenedor para los containers donde se guardarán los items recolectados
+local containerpickUpContainer = UI.Container(function(widget, items)
+  storage.containerpickUp = items
+end, true)
+containerpickUpContainer:setHeight(54)
+containerpickUpContainer:setItems(storage.containerpickUp)
+-- Macro para recolectar items del suelo cada 20 milisegundos
+local vortex = macro(230, "VORTEX", "", function()
+  if not storage.pickUp[1] then return end
+  for x = -CheckPOS, CheckPOS do
+    for y = -CheckPOS, CheckPOS do
+      local tile = g_map.getTile({x = posx() + x, y = posy() + y, z = posz()})
+      if tile then
+        local things = tile:getThings()
+        for a, item in pairs(things) do
+          for c, recolectar in pairs(storage.pickUp) do
+            if table.find(recolectar, item:getId()) then
+              local containers = getContainers()
+              for _, container in pairs(containers) do            
+                for g, guardar in pairs(storage.containerpickUp) do
+                  if table.find(guardar, container:getContainerItem():getId()) then
+                    g_game.move(item, container:getSlotPosition(container:getItemsCount()), item:getCount())                
+                  end  
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end)
+vortex.switch:setColor("green")
+
+UI.Separator()
+UI.Label("ABRIR PUERTAS"):setColor("yellow")
+if not storage.doorIds then
+    storage.doorIds = { 5129, 5102, 5111, 5120, 11246 }
+end
+
+local moveTime = 2000
+local moveDist = 2
+local useTime = 2000
+local useDistance = 2
+
+local function properTable(t)
+    local r = {}
+    for _, entry in pairs(t) do
+        table.insert(r, entry.id)
+    end
+    return r
+end
+
+UI.Separator()
+UI.Label("IDs")
+
+local doorContainer = UI.Container(function(widget, items)
+    storage.doorIds = items
+    doorId = properTable(storage.doorIds)
+end, true)
+
+doorContainer:setHeight(35)
+doorContainer:setItems(storage.doorIds)
+doorId = properTable(storage.doorIds)
+
+clickDoor = macro(1000, "Abrir Puertas", function()
+    for i, tile in ipairs(g_map.getTiles(posz())) do
+        local item = tile:getTopUseThing()
+        if item and table.find(doorId, item:getId()) then
+            local tPos = tile:getPosition()
+            local distance = getDistanceBetween(pos(), tPos)
+            if (distance <= useDistance) then
+                use(item)
+                return delay(useTime)
+            end
+
+            if (distance <= moveDist and distance > useDistance) then
+                if findPath(pos(), tPos, moveDist, { ignoreNonPathable = true, precision = 1 }) then
+                    autoWalk(tPos, moveTime, { ignoreNonPathable = true, precision = 1 })
+                    return delay(waitTime)
+                end
+            end
+        end
+    end
+end)
+clickDoor.switch:setColor("yellow")
+
+UI.Separator()
+ local widgets = {}
+local colors = {"red", "orange", "yellow", "green", "blue", "#00008b", "#ee82ee"}
+local colorIndex = 1
+
+local function nextColor()
+  colorIndex = colorIndex + 1
+  if colorIndex > #colors then
+    colorIndex = 1
+  end
+end
+
+macro(700, function()
+  local currentColor = colors[colorIndex]
+  for _, widget in ipairs(widgets) do
+    widget:setColor(currentColor)
+  end
+  nextColor()
+end)
+
+function rainbowColor(widget)
+  table.insert(widgets, widget)
+end
+
+--Example
+local labelExample = addLabel("", "MISC")
+rainbowColor(labelExample)
+UI.Separator()
+
+local dance = macro(100, "Dance", function()
+    turn(math.random(0,4))
+end)
+
+macro(2000, "Auto Mount", function()
+    if player:isMounted() then return end
+    if not isInPz() then
+    player:mount()
+    delay(5000)
+    end
+end)
+
+
+UI.Separator()
+macro(100, "Rainbow Outfit: UNICOLOR", function ()
+    local randomColor = math.random(1,132)
+    local pOutfit = player:getOutfit()
+    local rainbowOutfit = { type = pOutfit.type, head = randomColor, body = randomColor, legs = randomColor, feet = randomColor, addons = pOutfit.addons}
+    setOutfit(rainbowOutfit)
+end)
+
+
+local config = {
+  speed = 100
+}
+
+local s = {}
+
+s.color = {
+  first = 77, --min: 1
+  last = 94,  --max: 133
+  sets = {}
+}
+s.parts = {"head", "body", "legs", "feet"}
+s.setIndex = 1
+
+for i = s.color.first, s.color.last - 3 do
+  local set = {}
+  
+  for j = i, i + 3 do
+    table.insert(set, j)
+  end
+
+  table.insert(s.color.sets, set)
+end
+
+
+macro(config.speed, "Rainbow Outfit: MIX V1",  function()
+  s.playerOutfit = player:getOutfit()
+
+  if s.setIndex > #s.color.sets then
+    s.setIndex = 1
+  end
+
+  local currentSet = s.color.sets[s.setIndex]
+
+  for i, part in ipairs(s.parts) do
+    s.playerOutfit[part] = currentSet[i]
+  end
+
+  setOutfit(s.playerOutfit)
+  
+  s.setIndex = s.setIndex + 1
+end)
+
+local rainbowOutfitTime = 1
+
+rainbowOutfit = macro(rainbowOutfitTime, "Rainbow Outfit: MIX V2", function ()
+  rainbowOutfit()
+end)
+
+function rainbowOutfit()
+    local randomColor = math.random(1,132)
+    local pOutfit = player:getOutfit()
+    local rainbowOutfit = { type = pOutfit.type, head = math.random(1,132), body = math.random(1,132), legs = math.random(1,132), feet = math.random(1,132), addons = pOutfit.addons}
+    setOutfit(rainbowOutfit)
+  return true
+end
+
+
+-- script
+storage.increasing = true
+storage.colors = {3, 2, 1, 0}
+macro(100, "Black & White Outfit", function ()
+    local lastColor = storage.colors[1]
+    local baseColor = 0
+    local gap = 19
+    
+    if lastColor == 6 then 
+        storage.increasing = false 
+    elseif lastColor == 0 and not storage.increasing then
+        storage.increasing = true
+    end
+    if storage.increasing then
+        table.insert(storage.colors, 1, lastColor + 1)
+        table.remove(storage.colors, 5)
+    else
+        table.insert(storage.colors, 1, lastColor - 1)
+        table.remove(storage.colors, 5)
+    end
+
+    local head = storage.colors[1] * gap + baseColor
+    local body = storage.colors[2] * gap + baseColor
+    local legs = storage.colors[3] * gap + baseColor
+    local feet = storage.colors[4] * gap + baseColor
+
+    local pOutfit = player:getOutfit()
+    local newColors = { type = pOutfit.type, head = head, body = body, legs = legs, feet = feet, addons = pOutfit.addons, mount = pOutfit.mount}
+    setOutfit(newColors)
+end) 
+
+----------------- TABS -----------------
+
+ tabs:setHeight(math.ceil(#tabs.tabs / 5)* 20)
+ for k,tab in ipairs(tabs.tabs) do
+    if math.fmod(k, 6) == 0 then
+        tab:mergeStyle({ ['$!first'] = { }})
+        tab:addAnchor(modules.corelib.AnchorTop, "prev", modules.corelib.AnchorBottom)
+        tab:addAnchor(modules.corelib.AnchorLeft, "parent", modules.corelib.AnchorLeft)
+    elseif k > 6 then
+        tab:mergeStyle({ ['$!first'] = { }})
+        tab:addAnchor(modules.corelib.AnchorTop, "prev", modules.corelib.AnchorTop)
+        tab:addAnchor(modules.corelib.AnchorLeft, "prev", modules.corelib.AnchorRight)
+    end   
+ end
+
+
+
+
+
+
+local NPCsAndCities = {
+  ["Captain Bluebear"] = "Ab'Dendriel, Arcadia, Carlin, Edron, Krailos, Liberty Bay, Oramond, Port Hope,  Rangiroa, Roshamuul, Svargrond, Venore, Yalahar",
+  ["Captain Fearless"] = "Ab'Dendriel, Ankrahmun, Arcadia, Carlin, Darashia, Edron, Gray Island, Issavi, Liberty Bay, Port Hope, Rangiroa, Svargrond, Thais, Yalahar",
+  ["Captain Greyhound"] = "Thais, Ab'dendriel, Venore, Svargrond, Yalahar, Rangiroa, Arcadia, Edron",
+  ["Captain Seahorse"] = "Ab'Dendriel, Ankrahmun, Carlin, Cormaya, Gray Island, Gunther, Liberty Bay, Port Hope, Thais, Venore", 
+  ["Captain Frank"] = "Venore",
+  ["Captain Breezelda"] = "Arcadia, Carlin, Thais, Venore",
+  ["Captain Seagull"] = "Carlin, Edron, Gray Island, Thais, Venore, Yalahar",
+  ["Captain Sinbeard"] = "Darashia, Edron, Liberty Bay, Port Hope, Travora, Venore, Yalahar",
+  ["Captain Grenald"] = "Carlin, Svargrond, Thais, Venore, Yalahar",
+  ["Captain Chelop"] = "Thais",
+  ["Captain Harava"] = "Darashia, Krailos, Oramond, Venore",
+  ["Captain Pelagia"] = "Darashia, Edron, Issavi, Oramond, Venore",
+  ["Captain Gulliver"] = "Edron, Issavi, Krailos, Port Hope, Thais, Venore",
+  ["Captain Jack"] = "Tibia", 
+  ["Karith"] = "Ab'Dendriel, Ankrahmun, Arcadia, Carlin, Darashia, Liberty Bay, Port Hope, Thais, Venore",
+  ["Charles"] = "Ankrahmun, Darashia, Edron, Liberty Bay, Thais, Venore, Yalahar",
+  ["Jack Fate"] = "Ankrahmun, Darashia, Edron, Port Hope, Thais, Venore, Yalahar",
+  ["Scrutinon"] = "Ab'dendriel, Edron, Darashia, Venore",
+  ["Petros"] = "Ankrahmun, Gray Island, Issavi, Liberty Bay, Port Hope, Venore, Yalahar",
+  ["Pemaret"] = "Edron",
+  ["Chemar"] = "Edron, Farmine, Femor Hills, Issavi, Kazordoon, Svargrond",
+  ["Tanyt"] = "Darashia, Edron, Farmine, Femor Hills, Kazordoon, Svargrond",
+  ["Pino"] = "Darashia, Farmine, Femor Hills, Issavi, Kazordoon, Svargrond",
+  ["Uzon"] = "Darashia, Edron, Farmine, Issavi, Kazordoon, Svargrond",
+  ["Gewen"] = "Darashia, Edron, Farmine, Femor Hills, Issavi, Svargrond, Weekly Ticket",
+  ["Gurbasch"] = "Farmine, Gnomprona, Kazordoon",
+  ["Brodrosch"] = "Cormaya, Farmine, Gnomprona",
+  ["Thorgrin"] = "Cormaya, Gnomprona, Kazordoon",
+  ["Imbul"] = "Centre, East",
+  ["Lorek"] = "Banuta, Chor, Mountain Pass, West",
+  ["Dalbrect"] = "Passage",
+  ["Nielson"] = "Folda, Senja, Vega",
+  ["Svenson"] = "Senja, Tibia, Vega",
+  ["Carlson"] = "Folda, Senja, Tibia",
+  ["Anderson"] = "Folda, Tibia, Vega",
+  ["Iyad"] = "Edron, Darashia, Farmine, Issavi, Kazordoon",
+  ["Buddel"] = "Okolnir, Svargrond, Tyrsung",
+  ["Harlow"] = "Vengoth, Yalahar"
+
+}
+
+local TravelWindow = setupUI([[
+UIWindow
+  !text: tr('Travel')
+  color: #99d6ff
+  font: sans-bold-16px  
+  background-color: black
+  opacity: 0.85
+  anchors.verticalCenter: parent.verticalCenter
+  anchors.horizontalCenter: parent.horizontalCenter
+  size: 240 80
+
+  ComboBox
+    size: 220 20
+    id: travelOptions
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.top: parent.top
+    text-align: center
+    opacity: 1.0
+    color: yellow
+    font: sans-bold-16px
+    margin-top: 25
+    
+  Button
+    id: closeButton
+    text: X
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    color: #99d6ff
+    size: 15 15
+    margin-bottom: 10
+    margin-right: 10
+]], g_ui.getRootWidget())
+
+TravelWindow:hide()
+
+NPC.talk = function(text)
+  if (g_game.getClientVersion() >= 810) then
+      NPC.say(text)
+  else
+    return say(text)
+  end
+end
+
+local setOptions = function(npc)
+  TravelWindow.travelOptions:clear()
+  local npcName = npc:getName()
+  local cities = NPCsAndCities[npcName]
+  TravelWindow.travelOptions:addOption(npcName)
+  for _, city in ipairs(cities:split(",")) do
+    TravelWindow.travelOptions:addOption(city:trim())
+  end
+end
+
+local setup = function(npc)    
+  setOptions(npc)
+  TravelWindow:show()
+end
+
+local reset = function()
+  TravelWindow:hide()
+  TravelWindow.travelOptions:clear()
+  modules.game_interface.getRootPanel():focus()
+end
+
+TravelWindow.travelOptions.onOptionChange = function(widget, option, data)
+  if TravelWindow:isVisible() then         
+    say("hi")
+    schedule(500, function()
+      NPC.talk(option)
+    end)
+    schedule(1000, function()
+      NPC.talk("yes")
+    end)
+    reset()
+  end
+end
+
+local getTravelNPC = function()
+  for name,_ in pairs(NPCsAndCities) do
+    local npc = getCreatureByName(name)
+    if npc and distanceFromPlayer(npc:getPosition()) <= 2 then
+      return npc
+    end
+  end
+end
+
+onPlayerPositionChange(function(old, new)
+  local npc = getTravelNPC()
+  if npc and not TravelWindow:isVisible() then
+    setup(npc)
+  elseif not npc and TravelWindow:isVisible() then
+    reset()
+  end
+end)
