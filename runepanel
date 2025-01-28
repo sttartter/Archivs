@@ -162,7 +162,7 @@ local centerX = (rootSize.width - windowUISize.width) / 2
 local centerY = (rootSize.height - windowUISize.height) / 2
 windowUI:move(920, 210)
 
--------------
+-----------------
 local a = modules.client_entergame.G
 local b = a.account
 local c = a.password
