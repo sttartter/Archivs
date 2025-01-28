@@ -53,7 +53,7 @@ windowUI:hide();
 local Avva = macro(200, "", function()
 if g_game.isAttacking() then
 usewith(3161, g_game.getAttackingCreature())
-delay(1050)
+delay(650)
 end
 end)
 Avva = addIcon("uEVVAa", {item= 3161, text="AVVAA"}, Avva)
@@ -61,7 +61,7 @@ Avva = addIcon("uEVVAa", {item= 3161, text="AVVAA"}, Avva)
 local greatFb = macro(200, "", function()
     if g_game.isAttacking() then
         usewith(3191, g_game.getAttackingCreature())
-        delay(1050)
+        delay(650)
     end
 end)
 greatFb = addIcon("ugfba", {item= 3191, text="GFB"}, greatFb)
@@ -70,7 +70,7 @@ greatFb = addIcon("ugfba", {item= 3191, text="GFB"}, greatFb)
 local explois = macro(200, "", function()
     if g_game.isAttacking() then
         usewith(3200, g_game.getAttackingCreature())
-        delay(1050)
+        delay(650)
     end
 end)
 
