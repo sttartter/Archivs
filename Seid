@@ -1096,6 +1096,8 @@ Exoris = macro(200, "ATK - ANTIRED",  function()
 end)
 
 
+local detectRange = 8
+local time = 200
 antiGamerz = macro(100, "ANTI - PLAYERS", function()
     if getPlayers(detectRange) ~= 0 then
         TargetBot.delay(time)
